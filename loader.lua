@@ -1,22 +1,19 @@
---[[ FUST Visuals | Clean UI + ESP ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local LP = Players.LocalPlayer
 
--- ЦВЕТА (Черно-фиолетовая тема)
 local Theme = {
     Background = Color3.fromRGB(15, 15, 20),
     Sidebar = Color3.fromRGB(20, 20, 28),
-    Accent = Color3.fromRGB(150, 80, 255), -- Фиолетовый
+    Accent = Color3.fromRGB(150, 80, 255),
     Text = Color3.fromRGB(240, 240, 240),
     TextDim = Color3.fromRGB(150, 150, 160),
     Card = Color3.fromRGB(28, 28, 38),
     Border = Color3.fromRGB(45, 45, 60)
 }
 
--- НАСТРОЙКИ ESP
 local Config = {
     ESP = true,
     Box = true,
@@ -24,10 +21,9 @@ local Config = {
     Health = true,
     Distance = true,
     MaxDist = 1000,
-    Color = Color3.fromRGB(150, 80, 255) -- Цвет ESP под стать меню
+    Color = Color3.fromRGB(150, 80, 255)
 }
 
--- ОБЕРТКИ
 if not newcclosure then getgenv().newcclosure = function(f) return f end end
 local function N(class, props, parent)
     local o = Instance.new(class)
@@ -36,23 +32,18 @@ local function N(class, props, parent)
     return o
 end
 
--- ================= UI =================
 local SG = N("ScreenGui", {Name="FustVisuals", ResetOnSpawn=false, IgnoreGuiInset=true, ZIndexBehavior=Enum.ZIndexBehavior.Sibling}, CoreGui)
 local Main = N("Frame", {Size=UDim2.new(0, 550, 0, 350), Position=UDim2.new(0.5, -275, 0.5, -175), BackgroundColor3=Theme.Background, BorderSizePixel=0, Visible=true}, SG)
 N("UICorner", {CornerRadius=UDim.new(0, 8)}, Main)
 N("UIStroke", {Color=Theme.Border, Thickness=1}, Main)
 
--- Заголовок (Drag)
 local TopBar = N("Frame", {Size=UDim2.new(1, 0, 0, 40), BackgroundColor3=Theme.Sidebar, BorderSizePixel=0}, Main)
 N("UICorner", {CornerRadius=UDim.new(0, 8)}, TopBar)
 N("TextLabel", {Size=UDim2.new(1, -20, 1, 0), Position=UDim2.new(0, 15, 0, 0), BackgroundTransparency=1, Text="FUST | Visuals", TextColor3=Theme.Text, Font=Enum.Font.GothamBold, TextSize=14, TextXAlignment=Enum.TextXAlignment.Left}, TopBar)
-local CloseBtn = N("TextButton", {Size=UDim2.new(0, 30, 0, 30), Position=UDim2.new(1, -35, 0.5, -15), BackgroundTransparency=1, Text="✕", TextColor3=Theme.TextDim, Font=Enum.Font.GothamBold, TextSize=14}, TopBar)
+local CloseBtn = N("TextButton", {Size=UDim2.new(0, 30, 0, 30), Position=UDim2.new(1, -35, 0.5, -15), BackgroundTransparency=1, Text="X", TextColor3=Theme.TextDim, Font=Enum.Font.GothamBold, TextSize=14}, TopBar)
 CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
--- Панель контента (Слева)
 local Content = N("Frame", {Size=UDim2.new(1, -120, 1, -50), Position=UDim2.new(0, 10, 0, 50), BackgroundTransparency=1}, Main)
-
--- Вкладки (Справа)
 local Sidebar = N("Frame", {Size=UDim2.new(0, 100, 1, -50), Position=UDim2.new(1, -110, 0, 50), BackgroundColor3=Theme.Sidebar, BorderSizePixel=0}, Main)
 N("UICorner", {CornerRadius=UDim.new(0, 6)}, Sidebar)
 N("UIListLayout", {Padding=UDim.new(0, 5), HorizontalAlignment=Enum.HorizontalAlignment.Center}, Sidebar)
@@ -63,22 +54,17 @@ local function CreateTabBtn(text)
     N("UICorner", {CornerRadius=UDim.new(0, 4)}, btn)
     return btn
 end
-
 local visualTab = CreateTabBtn("Visuals")
--- Тут можно добавить другие вкладки позже
 N("UIListLayout", {Padding=UDim.new(0, 8)}, Content)
 
--- Функция создания свитча
 local function CreateToggle(name, stateKey)
     local f = N("Frame", {Size=UDim2.new(1, -20, 0, 35), BackgroundColor3=Theme.Card}, Content)
     N("UICorner", {CornerRadius=UDim.new(0, 6)}, f)
     N("TextLabel", {Size=UDim2.new(1, -60, 1, 0), Position=UDim2.new(0, 10, 0, 0), BackgroundTransparency=1, Text=name, TextColor3=Theme.Text, Font=Enum.Font.Gotham, TextSize=13, TextXAlignment=Enum.TextXAlignment.Left}, f)
-    
     local bg = N("Frame", {Size=UDim2.new(0, 36, 0, 18), Position=UDim2.new(1, -46, 0.5, -9), BackgroundColor3=Config[stateKey] and Theme.Accent or Theme.Border}, f)
     N("UICorner", {CornerRadius=UDim.new(0, 9)}, bg)
     local knob = N("Frame", {Size=UDim2.new(0, 14, 0, 14), Position=Config[stateKey] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3=Theme.Text}, bg)
     N("UICorner", {CornerRadius=UDim.new(0, 7)}, knob)
-    
     local btn = N("TextButton", {Size=UDim2.new(1, 0, 1, 0), BackgroundTransparency=1, Text=""}, f)
     btn.MouseButton1Click:Connect(function()
         Config[stateKey] = not Config[stateKey]
@@ -88,20 +74,16 @@ local function CreateToggle(name, stateKey)
     return f
 end
 
--- Слайдер дистанции
 local function CreateSlider(name, stateKey, min, max)
     local f = N("Frame", {Size=UDim2.new(1, -20, 0, 50), BackgroundColor3=Theme.Card}, Content)
     N("UICorner", {CornerRadius=UDim.new(0, 6)}, f)
     local lbl = N("TextLabel", {Size=UDim2.new(1, -20, 0, 20), Position=UDim2.new(0, 10, 0, 5), BackgroundTransparency=1, Text=name..": "..Config[stateKey], TextColor3=Theme.Text, Font=Enum.Font.Gotham, TextSize=12, TextXAlignment=Enum.TextXAlignment.Left}, f)
-    
     local bar = N("Frame", {Size=UDim2.new(1, -20, 0, 4), Position=UDim2.new(0, 10, 0, 30), BackgroundColor3=Theme.Border}, f)
     N("UICorner", {CornerRadius=UDim.new(0, 2)}, bar)
     local fill = N("Frame", {Size=UDim2.new((Config[stateKey]-min)/(max-min), 0, 1, 0), BackgroundColor3=Theme.Accent}, bar)
     N("UICorner", {CornerRadius=UDim.new(0, 2)}, fill)
-    
     local inp = N("TextButton", {Size=UDim2.new(1, 20, 1, 20), Position=UDim2.new(0, -10, 0, -10), BackgroundTransparency=1, Text=""}, bar)
     local dragging = false
-    
     inp.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true end end)
     UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
     UserInputService.InputChanged:Connect(function(i)
@@ -115,15 +97,13 @@ local function CreateSlider(name, stateKey, min, max)
     end)
 end
 
--- Добавляем элементы в меню
-CreateToggle("ESP Включить", "ESP")
-CreateToggle("Боксы (Box)", "Box")
-CreateToggle("Имена (Name)", "Name")
-CreateToggle("Здоровье (HP)", "Health")
-CreateToggle("Дистанция (Dist)", "Distance")
-CreateSlider("Макс. Дистанция", "MaxDist", 100, 3000)
+CreateToggle("ESP ON", "ESP")
+CreateToggle("Boxes", "Box")
+CreateToggle("Names", "Name")
+CreateToggle("Health", "Health")
+CreateToggle("Distance", "Distance")
+CreateSlider("Max Dist", "MaxDist", 100, 3000)
 
--- Перетаскивание меню
 local dragging, dragInput, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -138,7 +118,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ================= ESP LOGIC =================
 local PlayerCache = {}
 local function UpdateCache(pl)
     if pl ~= LP then
@@ -173,7 +152,6 @@ Players.PlayerRemoving:Connect(function(p)
     end
 end)
 
--- Рендер
 RunService.RenderStepped:Connect(function()
     local cam = workspace.CurrentCamera
     for pl, d in pairs(Drawings) do
@@ -192,22 +170,18 @@ RunService.RenderStepped:Connect(function()
                 local x = rootPos.X - width / 2
                 local y = headPos.Y - (height * 0.2)
                 
-                -- Бокс
                 d.Box.Visible = Config.Box
                 d.Box.Size = Vector2.new(width, height)
                 d.Box.Position = Vector2.new(x, y)
                 
-                -- Имя
                 d.Name.Visible = Config.Name
                 d.Name.Text = pl.DisplayName
                 d.Name.Position = Vector2.new(rootPos.X, y - 16)
                 
-                -- Дистанция
                 d.Dist.Visible = Config.Distance
                 d.Dist.Text = "[" .. math.floor(rootPos.Z) .. "m]"
                 d.Dist.Position = Vector2.new(rootPos.X, y + height + 2)
                 
-                -- ХП
                 d.Health.Visible = Config.Health
                 local hpP = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
                 d.Health.From = Vector2.new(x - 4, y + height)
