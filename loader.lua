@@ -2,8 +2,11 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
 local LP = Players.LocalPlayer
 
+-- Цвета
 local Theme = {
     Background = Color3.fromRGB(15, 15, 20),
     Sidebar = Color3.fromRGB(20, 20, 28),
@@ -14,6 +17,7 @@ local Theme = {
     Border = Color3.fromRGB(45, 45, 60)
 }
 
+-- Настройки
 local Config = {
     ESP = true,
     Box = true,
@@ -21,7 +25,8 @@ local Config = {
     Health = true,
     Distance = true,
     MaxDist = 1000,
-    Color = Color3.fromRGB(150, 80, 255)
+    Color = Color3.fromRGB(150, 80, 255),
+    Fullbright = false
 }
 
 if not newcclosure then getgenv().newcclosure = function(f) return f end end
@@ -32,17 +37,56 @@ local function N(class, props, parent)
     return o
 end
 
+-- Сохраняем старые настройки света для Fullbright
+local OldLighting = {
+    Ambient = Lighting.Ambient,
+    OutdoorAmbient = Lighting.OutdoorAmbient,
+    Brightness = Lighting.Brightness,
+    ClockTime = Lighting.ClockTime,
+    FogEnd = Lighting.FogEnd,
+    GlobalShadows = Lighting.GlobalShadows
+}
+
+local function ToggleFullbright(state)
+    Config.Fullbright = state
+    if state then
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 14
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+    else
+        Lighting.Ambient = OldLighting.Ambient
+        Lighting.OutdoorAmbient = OldLighting.OutdoorAmbient
+        Lighting.Brightness = OldLighting.Brightness
+        Lighting.ClockTime = OldLighting.ClockTime
+        Lighting.FogEnd = OldLighting.FogEnd
+        Lighting.GlobalShadows = OldLighting.GlobalShadows
+    end
+end
+
+-- Главный экран
 local SG = N("ScreenGui", {Name="FustVisuals", ResetOnSpawn=false, IgnoreGuiInset=true, ZIndexBehavior=Enum.ZIndexBehavior.Sibling}, CoreGui)
-local Main = N("Frame", {Size=UDim2.new(0, 550, 0, 350), Position=UDim2.new(0.5, -275, 0.5, -175), BackgroundColor3=Theme.Background, BorderSizePixel=0, Visible=true}, SG)
+
+-- Кнопка F
+local FBtn = N("TextButton", {Size=UDim2.new(0, 40, 0, 40), Position=UDim2.new(0, 20, 0.5, -20), BackgroundColor3=Theme.Accent, Text="F", TextColor3=Color3.new(1,1,1), Font=Enum.Font.GothamBold, TextSize=18, AutoButtonColor=false, ZIndex=50}, SG)
+N("UICorner", {CornerRadius=UDim.new(0, 20)}, FBtn)
+N("UIStroke", {Color=Color3.new(1,1,1), Thickness=1, Transparency=0.5}, FBtn)
+
+-- Меню
+local Main = N("Frame", {Size=UDim2.new(0, 550, 0, 350), Position=UDim2.new(0.5, -275, 0.5, -175), BackgroundColor3=Theme.Background, BorderSizePixel=0, Visible=false}, SG)
 N("UICorner", {CornerRadius=UDim.new(0, 8)}, Main)
 N("UIStroke", {Color=Theme.Border, Thickness=1}, Main)
 
+-- Верхняя панель
 local TopBar = N("Frame", {Size=UDim2.new(1, 0, 0, 40), BackgroundColor3=Theme.Sidebar, BorderSizePixel=0}, Main)
 N("UICorner", {CornerRadius=UDim.new(0, 8)}, TopBar)
 N("TextLabel", {Size=UDim2.new(1, -20, 1, 0), Position=UDim2.new(0, 15, 0, 0), BackgroundTransparency=1, Text="FUST | Visuals", TextColor3=Theme.Text, Font=Enum.Font.GothamBold, TextSize=14, TextXAlignment=Enum.TextXAlignment.Left}, TopBar)
 local CloseBtn = N("TextButton", {Size=UDim2.new(0, 30, 0, 30), Position=UDim2.new(1, -35, 0.5, -15), BackgroundTransparency=1, Text="X", TextColor3=Theme.TextDim, Font=Enum.Font.GothamBold, TextSize=14}, TopBar)
 CloseBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
 
+-- Контент и Сайдбар
 local Content = N("Frame", {Size=UDim2.new(1, -120, 1, -50), Position=UDim2.new(0, 10, 0, 50), BackgroundTransparency=1}, Main)
 local Sidebar = N("Frame", {Size=UDim2.new(0, 100, 1, -50), Position=UDim2.new(1, -110, 0, 50), BackgroundColor3=Theme.Sidebar, BorderSizePixel=0}, Main)
 N("UICorner", {CornerRadius=UDim.new(0, 6)}, Sidebar)
@@ -54,22 +98,26 @@ local function CreateTabBtn(text)
     N("UICorner", {CornerRadius=UDim.new(0, 4)}, btn)
     return btn
 end
-local visualTab = CreateTabBtn("Visuals")
+CreateTabBtn("Visuals")
 N("UIListLayout", {Padding=UDim.new(0, 8)}, Content)
 
-local function CreateToggle(name, stateKey)
+-- Элементы UI
+local function CreateToggle(name, stateKey, callback)
     local f = N("Frame", {Size=UDim2.new(1, -20, 0, 35), BackgroundColor3=Theme.Card}, Content)
     N("UICorner", {CornerRadius=UDim.new(0, 6)}, f)
     N("TextLabel", {Size=UDim2.new(1, -60, 1, 0), Position=UDim2.new(0, 10, 0, 0), BackgroundTransparency=1, Text=name, TextColor3=Theme.Text, Font=Enum.Font.Gotham, TextSize=13, TextXAlignment=Enum.TextXAlignment.Left}, f)
+    
     local bg = N("Frame", {Size=UDim2.new(0, 36, 0, 18), Position=UDim2.new(1, -46, 0.5, -9), BackgroundColor3=Config[stateKey] and Theme.Accent or Theme.Border}, f)
     N("UICorner", {CornerRadius=UDim.new(0, 9)}, bg)
     local knob = N("Frame", {Size=UDim2.new(0, 14, 0, 14), Position=Config[stateKey] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3=Theme.Text}, bg)
     N("UICorner", {CornerRadius=UDim.new(0, 7)}, knob)
+    
     local btn = N("TextButton", {Size=UDim2.new(1, 0, 1, 0), BackgroundTransparency=1, Text=""}, f)
     btn.MouseButton1Click:Connect(function()
         Config[stateKey] = not Config[stateKey]
         bg.BackgroundColor3 = Config[stateKey] and Theme.Accent or Theme.Border
         knob.Position = Config[stateKey] and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+        if callback then callback(Config[stateKey]) end
     end)
     return f
 end
@@ -103,7 +151,9 @@ CreateToggle("Names", "Name")
 CreateToggle("Health", "Health")
 CreateToggle("Distance", "Distance")
 CreateSlider("Max Dist", "MaxDist", 100, 3000)
+CreateToggle("Fullbright", "Fullbright", ToggleFullbright)
 
+-- Логика перетаскивания меню
 local dragging, dragInput, dragStart, startPos
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -118,6 +168,12 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- Кнопка F (Открыть/Закрыть)
+FBtn.MouseButton1Click:Connect(function()
+    Main.Visible = not Main.Visible
+end)
+
+-- Логика ESP
 local PlayerCache = {}
 local function UpdateCache(pl)
     if pl ~= LP then
@@ -152,6 +208,7 @@ Players.PlayerRemoving:Connect(function(p)
     end
 end)
 
+-- Отрисовка ESP (Оптимизировано)
 RunService.RenderStepped:Connect(function()
     local cam = workspace.CurrentCamera
     for pl, d in pairs(Drawings) do
