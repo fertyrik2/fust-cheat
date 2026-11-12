@@ -1,11 +1,10 @@
---[[ FUST | Bottom Bar Menu + Thin FOV + Aim 600m ]]
+--[[ FUST | Final Fix | ESP Death Fix + TeamCheck + WallCheck + Prediction ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
-local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 
 -- ОЧИСТКА
@@ -20,8 +19,12 @@ local Config = {
     ESP_Enabled = true,
     Aim_Enabled = true,
     NoDeco_Enabled = true,
+    TeamCheck = true,  -- Игнорировать тиммейтов
+    WallCheck = true,  -- Не наводиться сквозь стены
     MaxDist = 600,
     FOV_Size = 20,
+    SMOOTHNESS = 0.5, -- Быстрое наведение
+    PREDICTION = 0.15, -- Предугадывание (0.15 сек)
     Color = Color3.fromRGB(150, 80, 255)
 }
 
@@ -36,7 +39,7 @@ pcall(function()
 end)
 
 -- ==========================================
--- 2. NO DECO (Трава)
+-- 2. NO DECO
 -- ==========================================
 local function HidePart(part)
     if part:IsA("BasePart") then
@@ -54,7 +57,7 @@ for _, obj in ipairs(Workspace:GetDescendants()) do CheckAndHide(obj) end
 Workspace.DescendantAdded:Connect(function(obj) CheckAndHide(obj) end)
 
 -- ==========================================
--- 3. ТОНКИЙ КРУГ FOV (20px)
+-- 3. КРУГ FOV
 -- ==========================================
 local FOV_GUI = Instance.new("ScreenGui")
 FOV_GUI.Name = "FOVCircle_New"
@@ -72,7 +75,6 @@ local FOV_Stroke = Instance.new("UIStroke")
 FOV_Stroke.Color = Config.Color
 FOV_Stroke.Thickness = 1
 FOV_Stroke.Parent = FOV_Frame
-
 local FOV_Corner = Instance.new("UICorner")
 FOV_Corner.CornerRadius = UDim.new(0.5, 0)
 FOV_Corner.Parent = FOV_Frame
@@ -147,7 +149,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- 5. АИМ (600м)
+-- 5. АИМ (Prediction + Team + Wall)
 -- ==========================================
 local Target = nil
 local function GetClosestTarget()
@@ -158,14 +160,34 @@ local function GetClosestTarget()
 
     for pl, data in pairs(Cache) do
         if pl ~= LP and data.Hum and data.Hum.Health > 0 and data.Head then
-            local realDist = (data.Head.Position - Camera.CFrame.Position).Magnitude
-            if realDist <= Config.MaxDist then
-                local screenPos, onScreen = Camera:WorldToViewportPoint(data.Head.Position)
-                if onScreen then
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
-                    if dist < shortestDist then
-                        shortestDist = dist
-                        closest = data.Head
+            
+            -- 1. TEAM CHECK
+            local isTeammate = false
+            if Config.TeamCheck and pl.Team == LP.Team then isTeammate = true end
+            
+            if not isTeammate then
+                local realDist = (data.Head.Position - Camera.CFrame.Position).Magnitude
+                if realDist <= Config.MaxDist then
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(data.Head.Position)
+                    if onScreen then
+                        local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                        if dist < shortestDist then
+                            
+                            -- 2. WALL CHECK
+                            local visible = true
+                            if Config.WallCheck then
+                                local rayParams = RaycastParams.new()
+                                rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}
+                                rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                                local ray = Workspace:Raycast(Camera.CFrame.Position, data.Head.Position - Camera.CFrame.Position, rayParams)
+                                if ray then visible = false end
+                            end
+                            
+                            if visible then
+                                shortestDist = dist
+                                closest = data.Head
+                            end
+                        end
                     end
                 end
             end
@@ -182,26 +204,22 @@ MenuGui.Name = "FustMenu"
 MenuGui.ResetOnSpawn = false
 MenuGui.Parent = CoreGui
 
--- БЕЛАЯ ПОЛОСКА ВНИЗУ (Открытие меню)
 local BottomBar = Instance.new("TextButton")
-BottomBar.Size = UDim2.new(0, 150, 0, 4) -- Тонкая полоска
-BottomBar.Position = UDim2.new(0.5, -75, 1, -20) -- Внизу по центру
+BottomBar.Size = UDim2.new(0, 150, 0, 4)
+BottomBar.Position = UDim2.new(0.5, -75, 1, -20)
 BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 BottomBar.Text = ""
 BottomBar.Parent = MenuGui
-
 local barCorner = Instance.new("UICorner")
 barCorner.CornerRadius = UDim.new(1, 0)
 barCorner.Parent = BottomBar
 
--- Само меню (Скрыто)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 150, 0, 130)
-MainFrame.Position = UDim2.new(0.5, -75, 1, -160)
+MainFrame.Size = UDim2.new(0, 150, 0, 160) -- Чуть выше из-за новых кнопок
+MainFrame.Position = UDim2.new(0.5, -75, 1, -190)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 MainFrame.Visible = false
 MainFrame.Parent = MenuGui
-
 local stroke = Instance.new("UIStroke")
 stroke.Color = Config.Color
 stroke.Thickness = 1
@@ -210,7 +228,6 @@ local mCorner = Instance.new("UICorner")
 mCorner.CornerRadius = UDim.new(0, 6)
 mCorner.Parent = MainFrame
 
--- Кнопки в меню
 local function CreateToggle(name, key, pos)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -10, 0, 25)
@@ -221,7 +238,6 @@ local function CreateToggle(name, key, pos)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 12
     btn.Parent = MainFrame
-    
     local bCorner = Instance.new("UICorner")
     bCorner.CornerRadius = UDim.new(0, 4)
     bCorner.Parent = btn
@@ -229,7 +245,6 @@ local function CreateToggle(name, key, pos)
     btn.MouseButton1Click:Connect(function()
         Config[key] = not Config[key]
         btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
-        
         if key == "ESP_Enabled" and not Config.ESP_Enabled then
             for _, e in pairs(ESP) do
                 for _, obj in pairs(e) do if obj.Remove then obj.Visible = false end end
@@ -240,9 +255,10 @@ end
 
 CreateToggle("ESP", "ESP_Enabled", 5)
 CreateToggle("Aim", "Aim_Enabled", 35)
-CreateToggle("NoDeco", "NoDeco_Enabled", 65)
+CreateToggle("TeamCheck", "TeamCheck", 65)
+CreateToggle("WallCheck", "WallCheck", 95)
+CreateToggle("NoDeco", "NoDeco_Enabled", 125)
 
--- Логика открытия/закрытия по полоске
 BottomBar.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
@@ -253,21 +269,26 @@ end)
 local acc = 0
 RunService.RenderStepped:Connect(function(dt)
     acc = acc + dt
-    if acc < (1 / 20) then return end
+    if acc < (1 / 30) then return end
     acc = 0
 
     local cam = Camera
     if not cam then return end
     local camPos = cam.CFrame.Position
 
-    -- Аим
+    -- Аим с предугадыванием
     if Config.Aim_Enabled then
         Target = GetClosestTarget()
         if Target then
             FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
+            
+            -- ПРЕДУГАДЫВАНИЕ: берем скорость цели и умножаем на время
+            local targetVelocity = Target.Velocity
+            local predictedPos = Target.Position + (targetVelocity * Config.PREDICTION)
+            
             local currentCFrame = cam.CFrame
-            local targetCFrame = CFrame.new(currentCFrame.Position, Target.Position)
-            cam.CFrame = currentCFrame:Lerp(targetCFrame, 0.4)
+            local targetCFrame = CFrame.new(currentCFrame.Position, predictedPos)
+            cam.CFrame = currentCFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
         else
             FOV_Stroke.Color = Config.Color
         end
@@ -277,7 +298,9 @@ RunService.RenderStepped:Connect(function(dt)
     if Config.ESP_Enabled then
         for pl, e in pairs(ESP) do
             local data = Cache[pl]
-            if data and data.Hum and data.Hum.Health > 0 and data.Head and data.HRP then
+            
+            -- ФИКС: Если игрок мертв или модель исчезла - скрываем
+            if data and data.Hum and data.Hum.Health > 0 and data.Char and data.Char.Parent and data.Head.Parent and data.HRP.Parent then
                 local realDist = (data.HRP.Position - camPos).Magnitude
                 if realDist <= Config.MaxDist then
                     local headPos, _ = cam:WorldToViewportPoint(data.Head.Position)
@@ -302,8 +325,17 @@ RunService.RenderStepped:Connect(function(dt)
                         e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height)
                         e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent))
                         e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
+                    else
+                        e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
+                        e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
                     end
                 else
+                    e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
+                    e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
+                end
+            else
+                -- Если мертв или нет данных - скрываем
+                if e.b1 then
                     e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
                     e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
                 end
@@ -312,4 +344,4 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
-print("[FUST] Полоска внизу + Тонкий FOV + ESP + Aim загружено.")
+print("[FUST] Финальный фикс: Трупный ESP убран, добавлены TeamCheck, WallCheck и Prediction.")
