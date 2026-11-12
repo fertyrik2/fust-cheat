@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Moder: Skeleton + WeaponESP + CustomFOV ]]
+--[[ FUST | PREMIUM EDITION | Moder: fust8898 | Username Lock ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,16 +9,18 @@ local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
 
 -- ==========================================
--- KEY SYSTEM
+-- KEY SYSTEM (Привязка по Нику)
 -- ==========================================
 local VALID_KEYS = {
-    ["free-516752526337g772"] = "free",
-    ["free-5676266376637667h772"] = "free",
-    ["free-5671715627365364k772"] = "free",
-    ["moder778467526"] = "moder" -- Твой ключ
+    -- Ключ = {role = "роль", user = "Ник"}
+    ["free-516752526337g772"] = {role = "free", user = "Друг1"}, 
+    ["free-5676266376637667h772"] = {role = "free", user = "Друг2"},
+    ["free-5671715627365364k772"] = {role = "free", user = "Друг3"},
+    ["moder778467526"] = {role = "moder", user = "fust8898"} -- ТВОЙ НИК
 }
 
-local UserRole = "free" -- По умолчанию
+local UserRole = "free"
+local MyUsername = LP.Name -- Автоматически берет ник того, кто запустил
 
 local KeyGui = Instance.new("ScreenGui")
 KeyGui.Name = "KeySystemGui"
@@ -47,97 +49,44 @@ local function StartCheat()
     end)
 
     local Config = {
-        ESP_Enabled = true,
-        Aim_Enabled = true,
-        NoDeco_Enabled = true,
-        TeamCheck = true,
-        WallCheck = true,
-        ESP_MaxDist = 1600,
-        AIM_Range = 500,
-        FOV_Size = 20,
-        SMOOTHNESS = 0.65,
-        PREDICTION = 0.148,
+        ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true,
+        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
+        FOV_Size = 20, SMOOTHNESS = 0.65, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
-        
-        -- Moder Only
-        SkeletonESP = false,
-        WeaponESP = false,
-        CustomFOV = false,
-        CurrentFOV = 70
+        SkeletonESP = false, WeaponESP = false, CurrentFOV = 70
     }
 
-    -- 1. FULLBRIGHT
     pcall(function()
         local cc = Instance.new("ColorCorrectionEffect")
-        cc.Name = "Fust_CC"
-        cc.Brightness = 0.15
-        cc.Parent = Lighting
+        cc.Name = "Fust_CC"; cc.Brightness = 0.15; cc.Parent = Lighting
     end)
 
-    -- 2. NO DECO
-    local function HidePart(part)
-        if part:IsA("BasePart") then
-            part.Transparency = 1
-            part.CanCollide = false
-        end
-    end
+    local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
     local function CheckAndHide(part)
         if not part:IsA("BasePart") then return end
-        local mat = part.Material
-        local maxSize = math.max(part.Size.X, part.Size.Y, part.Size.Z)
-        if (mat == Enum.Material.Grass or mat == Enum.Material.LeafyGrass) and maxSize <= 15 then HidePart(part) end
+        if (part.Material == Enum.Material.Grass or part.Material == Enum.Material.LeafyGrass) and math.max(part.Size.X, part.Size.Y, part.Size.Z) <= 15 then HidePart(part) end
     end
     for _, obj in ipairs(Workspace:GetDescendants()) do CheckAndHide(obj) end
-    Workspace.DescendantAdded:Connect(function(obj) CheckAndHide(obj) end)
+    Workspace.DescendantAdded:Connect(CheckAndHide)
 
-    -- 3. КРУГ FOV
-    local FOV_GUI = Instance.new("ScreenGui")
-    FOV_GUI.Name = "FOVCircle_New"
-    FOV_GUI.ResetOnSpawn = false
-    FOV_GUI.IgnoreGuiInset = true
-    FOV_GUI.Parent = CoreGui
-
-    local FOV_Frame = Instance.new("Frame")
-    FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
-    FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
-    FOV_Frame.BackgroundTransparency = 1
-    FOV_Frame.Parent = FOV_GUI
+    local FOV_GUI = Instance.new("ScreenGui"); FOV_GUI.Name = "FOVCircle_New"; FOV_GUI.ResetOnSpawn = false; FOV_GUI.IgnoreGuiInset = true; FOV_GUI.Parent = CoreGui
+    local FOV_Frame = Instance.new("Frame"); FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2); FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size); FOV_Frame.BackgroundTransparency = 1; FOV_Frame.Parent = FOV_GUI
     local FOV_Stroke = Instance.new("UIStroke"); FOV_Stroke.Color = Config.Color; FOV_Stroke.Thickness = 1; FOV_Stroke.Parent = FOV_Frame
     local FOV_Corner = Instance.new("UICorner"); FOV_Corner.CornerRadius = UDim.new(0.5, 0); FOV_Corner.Parent = FOV_Frame
 
-    -- 4. ESP (Скелет, Оружие)
-    local ESP = {}
-    local Cache = {}
-
+    local ESP = {}; local Cache = {}
     local function CreateESP(pl)
         if pl == LP or ESP[pl] then return end
         local e = {}
-        -- Бокс
-        e.b1 = Drawing.new("Line"); e.b2 = Drawing.new("Line")
-        e.b3 = Drawing.new("Line"); e.b4 = Drawing.new("Line")
+        e.b1 = Drawing.new("Line"); e.b2 = Drawing.new("Line"); e.b3 = Drawing.new("Line"); e.b4 = Drawing.new("Line")
         e.b1.Thickness = 1; e.b2.Thickness = 1; e.b3.Thickness = 1; e.b4.Thickness = 1
         e.b1.Color = Config.Color; e.b2.Color = Config.Color; e.b3.Color = Config.Color; e.b4.Color = Config.Color
-        
-        -- Текст (Дистанция)
-        e.dist = Drawing.new("Text")
-        e.dist.Size = 12; e.dist.Center = true; e.dist.Outline = true; e.dist.Color = Color3.new(1,1,1)
-        
-        -- Текст (Оружие - для модера)
-        e.weapon = Drawing.new("Text")
-        e.weapon.Size = 11; e.weapon.Center = true; e.weapon.Outline = true; e.weapon.Color = Color3.fromRGB(255, 200, 0)
-        e.weapon.Visible = false
-
-        -- ХП
+        e.dist = Drawing.new("Text"); e.dist.Size = 12; e.dist.Center = true; e.dist.Outline = true; e.dist.Color = Color3.new(1,1,1)
+        e.weapon = Drawing.new("Text"); e.weapon.Size = 11; e.weapon.Center = true; e.weapon.Outline = true; e.weapon.Color = Color3.fromRGB(255, 200, 0); e.weapon.Visible = false
         e.hpBg = Drawing.new("Line"); e.hpBg.Thickness = 2; e.hpBg.Color = Color3.new(0,0,0)
         e.hpFill = Drawing.new("Line"); e.hpFill.Thickness = 2
-
-        -- Скелет (для модера)
-        e.bones = {
-            Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"),
-            Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line")
-        }
+        e.bones = { Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line") }
         for _, b in ipairs(e.bones) do b.Thickness = 1; b.Color = Color3.fromRGB(255, 100, 100); b.Visible = false end
-
         ESP[pl] = e
     end
 
@@ -145,8 +94,7 @@ local function StartCheat()
         if ESP[pl] then
             local e = ESP[pl]
             pcall(function()
-                e.b1:Remove(); e.b2:Remove(); e.b3:Remove(); e.b4:Remove()
-                e.dist:Remove(); e.hpBg:Remove(); e.hpFill:Remove(); e.weapon:Remove()
+                e.b1:Remove(); e.b2:Remove(); e.b3:Remove(); e.b4:Remove(); e.dist:Remove(); e.hpBg:Remove(); e.hpFill:Remove(); e.weapon:Remove()
                 for _, b in ipairs(e.bones) do b:Remove() end
             end)
             ESP[pl] = nil
@@ -157,52 +105,23 @@ local function StartCheat()
     local function UpdateCache(pl)
         local char = pl.Character
         if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            local head = char:FindFirstChild("Head")
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            if hum and head and hrp then
-                Cache[pl] = { Char = char, Hum = hum, HRP = hrp, Head = head }
-            else
-                Cache[pl] = nil
-            end
-        else
-            Cache[pl] = nil
-        end
+            local hum = char:FindFirstChildOfClass("Humanoid"); local head = char:FindFirstChild("Head"); local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hum and head and hrp then Cache[pl] = { Char = char, Hum = hum, HRP = hrp, Head = head } else Cache[pl] = nil end
+        else Cache[pl] = nil end
     end
 
     for _, p in ipairs(Players:GetPlayers()) do UpdateCache(p); CreateESP(p) end
-    Players.PlayerAdded:Connect(function(p)
-        p.CharacterAdded:Connect(function() task.wait(0.5); UpdateCache(p) end)
-        UpdateCache(p); CreateESP(p)
-    end)
+    Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Connect(function() task.wait(0.5); UpdateCache(p) end); UpdateCache(p); CreateESP(p) end)
     Players.PlayerRemoving:Connect(RemoveAll)
+    task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    task.spawn(function()
-        while task.wait(1) do
-            for _, pl in ipairs(Players:GetPlayers()) do
-                if pl ~= LP then
-                    local data = Cache[pl]
-                    if not data or not data.Head.Parent or not data.HRP.Parent then
-                        UpdateCache(pl)
-                    end
-                end
-            end
-        end
-    end)
-
-    -- 5. АИМ
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
-        local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-        local closest = nil
-        local shortestDist = Config.FOV_Size
-
+        local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2); local closest = nil; local shortestDist = Config.FOV_Size
         for pl, data in pairs(Cache) do
             if pl ~= LP and data.Hum and data.Hum.Health > 0 and data.Head then
-                local isTeammate = false
-                if Config.TeamCheck and pl.Team == LP.Team then isTeammate = true end
-                if not isTeammate then
+                if not (Config.TeamCheck and pl.Team == LP.Team) then
                     local realDist = (data.Head.Position - Camera.CFrame.Position).Magnitude
                     if realDist <= Config.AIM_Range then
                         local screenPos, onScreen = Camera:WorldToViewportPoint(data.Head.Position)
@@ -214,17 +133,11 @@ local function StartCheat()
                                     local points = { data.Head.Position, data.Head.Position + Vector3.new(0, 0.5, 0), data.Head.Position - Vector3.new(0, 0.5, 0) }
                                     visible = false
                                     for _, pt in ipairs(points) do
-                                        local rayParams = RaycastParams.new()
-                                        rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}
-                                        rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                                        local ray = Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams)
-                                        if not ray then visible = true; break end
+                                        local rayParams = RaycastParams.new(); rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}; rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                                        if not Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams) then visible = true; break end
                                     end
                                 end
-                                if visible then
-                                    shortestDist = dist
-                                    closest = data.Head
-                                end
+                                if visible then shortestDist = dist; closest = data.Head end
                             end
                         end
                     end
@@ -234,245 +147,113 @@ local function StartCheat()
         return closest
     end
 
-    -- 6. МЕНЮ
-    local MenuGui = Instance.new("ScreenGui")
-    MenuGui.Name = "FustMenu"
-    MenuGui.ResetOnSpawn = false
-    MenuGui.Parent = CoreGui
-
-    local BottomBar = Instance.new("TextButton")
-    BottomBar.Size = UDim2.new(0, 150, 0, 4)
-    BottomBar.Position = UDim2.new(0.5, -75, 1, -20)
-    BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    BottomBar.Text = ""
-    BottomBar.Parent = MenuGui
+    local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
+    local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
-
-    local MainFrame = Instance.new("Frame")
-    -- Увеличиваем высоту меню, чтобы влезли новые кнопки для модера
-    MainFrame.Size = UDim2.new(0, 150, 0, 160 + (UserRole == "moder" and 90 or 0))
-    MainFrame.Position = UDim2.new(0.5, -75, 1, -190 - (UserRole == "moder" and 90 or 0))
-    MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-    MainFrame.Visible = false
-    MainFrame.Parent = MenuGui
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, 160 + (UserRole == "moder" and 90 or 0)); MainFrame.Position = UDim2.new(0.5, -75, 1, -190 - (UserRole == "moder" and 90 or 0)); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1; stroke.Parent = MainFrame
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
 
-    -- ПЕРЕТАСКИВАНИЕ
     local dragging, dragStart, startPos
-    MainFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = MainFrame.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+    MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = MainFrame.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
+    UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
     local function CreateToggle(name, key, pos)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -10, 0, 25)
-        btn.Position = UDim2.new(0, 5, 0, pos)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
-        btn.TextColor3 = Color3.new(1,1,1)
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 12
-        btn.Parent = MainFrame
+        local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 25); btn.Position = UDim2.new(0, 5, 0, pos); btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF"); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Gotham; btn.TextSize = 12; btn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = btn
-        
         btn.MouseButton1Click:Connect(function()
-            Config[key] = not Config[key]
-            btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
-            
-            -- Логика для скрытия/показа при выключении
-            if key == "ESP_Enabled" and not Config.ESP_Enabled then
-                for _, e in pairs(ESP) do
-                    for _, obj in pairs(e) do if obj.Remove then obj.Visible = false end end
-                    for _, b in ipairs(e.bones) do b.Visible = false end
-                end
-            end
-            -- Логика кастомного FOV
-            if key == "CustomFOV" then
-                if Config.CustomFOV then
-                    Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20
-                    Camera.FieldOfView = Config.CurrentFOV
-                    btn.Text = "FOV: " .. Config.CurrentFOV
-                else
-                    Camera.FieldOfView = 70
-                    btn.Text = "FOV: 70"
-                end
-            end
+            Config[key] = not Config[key]; btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
+            if key == "ESP_Enabled" and not Config.ESP_Enabled then for _, e in pairs(ESP) do for _, obj in pairs(e) do if obj.Remove then obj.Visible = false end end; for _, b in ipairs(e.bones) do b.Visible = false end end end
         end)
     end
 
-    -- Базовые кнопки (все)
-    CreateToggle("ESP", "ESP_Enabled", 5)
-    CreateToggle("Aim", "Aim_Enabled", 35)
-    CreateToggle("TeamCheck", "TeamCheck", 65)
-    CreateToggle("WallCheck", "WallCheck", 95)
-    CreateToggle("NoDeco", "NoDeco_Enabled", 125)
-
-    -- Эксклюзивные кнопки (только для модера)
+    CreateToggle("ESP", "ESP_Enabled", 5); CreateToggle("Aim", "Aim_Enabled", 35); CreateToggle("TeamCheck", "TeamCheck", 65); CreateToggle("WallCheck", "WallCheck", 95); CreateToggle("NoDeco", "NoDeco_Enabled", 125)
     if UserRole == "moder" then
-        CreateToggle("Skeleton", "SkeletonESP", 155)
-        CreateToggle("WeaponESP", "WeaponESP", 185)
-        -- Кнопка FOV (работает как переключатель 70 -> 90 -> 110 -> 120)
-        local fovBtn = Instance.new("TextButton")
-        fovBtn.Size = UDim2.new(1, -10, 0, 25)
-        fovBtn.Position = UDim2.new(0, 5, 0, 215)
-        fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255) -- Выделяем цветом
-        fovBtn.Text = "FOV: 70 (Click to change)"
-        fovBtn.TextColor3 = Color3.new(1,1,1)
-        fovBtn.Font = Enum.Font.GothamBold
-        fovBtn.TextSize = 12
-        fovBtn.Parent = MainFrame
+        CreateToggle("Skeleton", "SkeletonESP", 155); CreateToggle("WeaponESP", "WeaponESP", 185)
+        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 215); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = fovBtn
-        
-        fovBtn.MouseButton1Click:Connect(function()
-            Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20
-            Camera.FieldOfView = Config.CurrentFOV
-            fovBtn.Text = "FOV: " .. Config.CurrentFOV
-        end)
+        fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "FOV: " .. Config.CurrentFOV end)
     end
+    BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
-    BottomBar.MouseButton1Click:Connect(function()
-        MainFrame.Visible = not MainFrame.Visible
-    end)
-
-    -- 7. ЦИКЛ
     local acc = 0
     RunService.RenderStepped:Connect(function(dt)
-        acc = acc + dt
-        if acc < (1 / 30) then return end
-        acc = 0
-
-        local cam = Camera
-        if not cam then return end
-        local camPos = cam.CFrame.Position
-
+        acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
+        local cam = Camera; if not cam then return end; local camPos = cam.CFrame.Position
         if Config.Aim_Enabled then
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                local targetVelocity = Target.Velocity
-                local predictedPos = Target.Position + (targetVelocity * Config.PREDICTION)
-                local currentCFrame = cam.CFrame
-                local targetCFrame = CFrame.new(currentCFrame.Position, predictedPos)
-                cam.CFrame = currentCFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
-            else
-                FOV_Stroke.Color = Config.Color
-            end
+                local targetCFrame = CFrame.new(cam.CFrame.Position, Target.Position + (Target.Velocity * Config.PREDICTION))
+                cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
+            else FOV_Stroke.Color = Config.Color end
         end
-
         if Config.ESP_Enabled then
             for pl, e in pairs(ESP) do
                 local data = Cache[pl]
                 if data and data.Hum and data.Hum.Health > 0 and data.Char and data.Char.Parent and data.Head.Parent and data.HRP.Parent then
                     local realDist = (data.HRP.Position - camPos).Magnitude
                     if realDist <= Config.ESP_MaxDist then
-                        local headPos, _ = cam:WorldToViewportPoint(data.Head.Position)
-                        local rootPos, _ = cam:WorldToViewportPoint(data.HRP.Position)
+                        local headPos, _ = cam:WorldToViewportPoint(data.Head.Position); local rootPos, _ = cam:WorldToViewportPoint(data.HRP.Position)
                         if headPos.Z > 0 then
-                            local height = math.abs(headPos.Y - rootPos.Y) * 1.5
-                            local width = height / 2
-                            local x, y = rootPos.X - width / 2, rootPos.Y - height / 2
-                            
+                            local height = math.abs(headPos.Y - rootPos.Y) * 1.5; local width = height / 2; local x, y = rootPos.X - width / 2, rootPos.Y - height / 2
                             e.b1.Visible = true; e.b1.From = Vector2.new(x, y); e.b1.To = Vector2.new(x + width, y)
                             e.b2.Visible = true; e.b2.From = Vector2.new(x + width, y); e.b2.To = Vector2.new(x + width, y + height)
                             e.b3.Visible = true; e.b3.From = Vector2.new(x + width, y + height); e.b3.To = Vector2.new(x, y + height)
                             e.b4.Visible = true; e.b4.From = Vector2.new(x, y + height); e.b4.To = Vector2.new(x, y)
-
-                            e.dist.Visible = true
-                            e.dist.Text = "[" .. math.floor(realDist) .. "m]"
-                            e.dist.Position = Vector2.new(x + width / 2, y + height + 2)
-
+                            e.dist.Visible = true; e.dist.Text = "[" .. math.floor(realDist) .. "m]"; e.dist.Position = Vector2.new(x + width / 2, y + height + 2)
                             local hpPercent = math.clamp(data.Hum.Health / data.Hum.MaxHealth, 0, 1)
                             e.hpBg.Visible = true; e.hpBg.From = Vector2.new(x - 6, y); e.hpBg.To = Vector2.new(x - 6, y + height)
-                            e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height)
-                            e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent))
-                            e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
-
-                            -- WEAPON ESP (Только для модера)
+                            e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height); e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent)); e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
                             if UserRole == "moder" and Config.WeaponESP then
                                 local tool = data.Char:FindFirstChildOfClass("Tool")
-                                if tool then
-                                    e.weapon.Visible = true
-                                    e.weapon.Text = "[" .. tool.Name .. "]"
-                                    e.weapon.Position = Vector2.new(x + width / 2, y - 16)
-                                else
-                                    e.weapon.Visible = false
-                                end
-                            else
-                                e.weapon.Visible = false
-                            end
-
-                            -- SKELETON ESP (Только для модера)
+                                if tool then e.weapon.Visible = true; e.weapon.Text = "[" .. tool.Name .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16) else e.weapon.Visible = false end
+                            else e.weapon.Visible = false end
                             if UserRole == "moder" and Config.SkeletonESP then
-                                local function to2d(part) 
-                                    if not part then return nil end 
-                                    local sp, on = cam:WorldToViewportPoint(part.Position)
-                                    if on then return Vector2.new(sp.X, sp.Y) end 
-                                    return nil 
-                                end
-                                local head2d = to2d(data.Head)
-                                local hrp2d = to2d(data.HRP)
-                                local upperTorso = data.Char:FindFirstChild("UpperTorso")
-                                local torso2d = to2d(upperTorso)
-                                local lArm = data.Char:FindFirstChild("LeftUpperArm")
-                                local rArm = data.Char:FindFirstChild("RightUpperArm")
-                                local lLeg = data.Char:FindFirstChild("LeftUpperLeg")
-                                local rLeg = data.Char:FindFirstChild("RightUpperLeg")
-                                
-                                -- Сбрасываем видимость
+                                local function to2d(p) if not p then return nil end local sp, on = cam:WorldToViewportPoint(p.Position) if on then return Vector2.new(sp.X, sp.Y) end return nil end
+                                local h2d, r2d = to2d(data.Head), to2d(data.HRP); local t2d = to2d(data.Char:FindFirstChild("UpperTorso"))
+                                local la, ra = to2d(data.Char:FindFirstChild("LeftUpperArm")), to2d(data.Char:FindFirstChild("RightUpperArm"))
+                                local ll, rl = to2d(data.Char:FindFirstChild("LeftUpperLeg")), to2d(data.Char:FindFirstChild("RightUpperLeg"))
                                 for _, b in ipairs(e.bones) do b.Visible = false end
-                                
-                                if head2d and hrp2d then e.bones[1].Visible = true; e.bones[1].From = head2d; e.bones[1].To = hrp2d end
-                                if torso2d and hrp2d then e.bones[2].Visible = true; e.bones[2].From = torso2d; e.bones[2].To = hrp2d end
-                                if torso2d and lArm then local p = to2d(lArm); if p then e.bones[3].Visible = true; e.bones[3].From = torso2d; e.bones[3].To = p end end
-                                if torso2d and rArm then local p = to2d(rArm); if p then e.bones[4].Visible = true; e.bones[4].From = torso2d; e.bones[4].To = p end end
-                                if hrp2d and lLeg then local p = to2d(lLeg); if p then e.bones[5].Visible = true; e.bones[5].From = hrp2d; e.bones[5].To = p end end
-                                if hrp2d and rLeg then local p = to2d(rLeg); if p then e.bones[6].Visible = true; e.bones[6].From = hrp2d; e.bones[6].To = p end end
-                            else
-                                for _, b in ipairs(e.bones) do b.Visible = false end
-                            end
+                                if h2d and r2d then e.bones[1].Visible = true; e.bones[1].From = h2d; e.bones[1].To = r2d end
+                                if t2d and r2d then e.bones[2].Visible = true; e.bones[2].From = t2d; e.bones[2].To = r2d end
+                                if t2d and la then e.bones[3].Visible = true; e.bones[3].From = t2d; e.bones[3].To = la end
+                                if t2d and ra then e.bones[4].Visible = true; e.bones[4].From = t2d; e.bones[4].To = ra end
+                                if r2d and ll then e.bones[5].Visible = true; e.bones[5].From = r2d; e.bones[5].To = ll end
+                                if r2d and rl then e.bones[6].Visible = true; e.bones[6].From = r2d; e.bones[6].To = rl end
+                            else for _, b in ipairs(e.bones) do b.Visible = false end end
                         else
-                            e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
-                            e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
-                            e.weapon.Visible = false
+                            for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
                             for _, b in ipairs(e.bones) do b.Visible = false end
                         end
                     else
-                        e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
-                        e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
-                        e.weapon.Visible = false
+                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
                         for _, b in ipairs(e.bones) do b.Visible = false end
                     end
                 else
                     if e.b1 then
-                        e.b1.Visible = false; e.b2.Visible = false; e.b3.Visible = false; e.b4.Visible = false
-                        e.dist.Visible = false; e.hpBg.Visible = false; e.hpFill.Visible = false
-                        e.weapon.Visible = false
+                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
                         for _, b in ipairs(e.bones) do b.Visible = false end
                     end
                 end
             end
         end
     end)
-
-    print("[FUST] Premium Edition loaded. Role: " .. UserRole)
 end
 
 Submit.MouseButton1Click:Connect(function()
     local enteredKey = Input.Text
-    if VALID_KEYS[enteredKey] then
-        UserRole = VALID_KEYS[enteredKey] -- Сохраняем роль (free или moder)
-        KeyGui:Destroy()
-        StartCheat()
+    local keyData = VALID_KEYS[enteredKey]
+    
+    if keyData then
+        if keyData.user == MyUsername then
+            UserRole = keyData.role
+            KeyGui:Destroy()
+            StartCheat()
+        else
+            Input.Text = ""
+            Input.PlaceholderText = "Ключ привязан к " .. keyData.user
+        end
     else
         Input.Text = ""
         Input.PlaceholderText = "Неверный ключ!"
