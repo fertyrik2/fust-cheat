@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Skeleton & Weapon in Visuals ]]
+--[[ FUST | PREMIUM EDITION | New Moder Key ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -21,8 +21,9 @@ end)
 if success and type(result) == "table" then 
     KEY_DATABASE = result
 else
+    -- Резервные ключи (твой новый и клиента)
     KEY_DATABASE = { 
-        ["moder778467526"] = {role = "moder", user = "fust8898"},
+        ["moder2563546"] = {role = "moder", user = "fustmycheat"},
         ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"}
     } 
 end
@@ -270,14 +271,12 @@ local function StartCheat()
                 AddToggle("Custom Sky", "CustomSky_Enabled", 75, SetCustomSky)
                 AddToggle("NoDeco", "NoDeco_Enabled", 110)
                 
-                -- НОВОЕ: Skeleton и Weapon ESP для модера/премиума
                 if UserRole == "moder" or UserRole == "premium" then
                     AddToggle("Skeleton", "SkeletonESP", 145)
                     AddToggle("WeaponESP", "WeaponESP", 180)
                 end
                 
             elseif name == "Aimbot" and (UserRole == "moder" or UserRole == "premium") then
-                -- Smoothness
                 local smoothBtn = Instance.new("TextButton"); smoothBtn.Size = UDim2.new(1, -10, 0, 30); smoothBtn.Position = UDim2.new(0, 5, 0, 5); smoothBtn.BackgroundColor3 = Config.Color; smoothBtn.Text = "Smoothness: " .. Config.SMOOTHNESS; smoothBtn.TextColor3 = Color3.new(1,1,1); smoothBtn.Font = Enum.Font.GothamBold; smoothBtn.TextSize = 13; smoothBtn.Parent = Content
                 local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = smoothBtn
                 smoothBtn.MouseButton1Click:Connect(function()
@@ -285,7 +284,6 @@ local function StartCheat()
                     smoothBtn.Text = "Smoothness: " .. string.format("%.1f", Config.SMOOTHNESS)
                 end)
 
-                -- Prediction
                 local predBtn = Instance.new("TextButton"); predBtn.Size = UDim2.new(1, -10, 0, 30); predBtn.Position = UDim2.new(0, 5, 0, 40); predBtn.BackgroundColor3 = Config.Color; predBtn.Text = "Prediction: " .. Config.PREDICTION; predBtn.TextColor3 = Color3.new(1,1,1); predBtn.Font = Enum.Font.GothamBold; predBtn.TextSize = 13; predBtn.Parent = Content
                 local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = predBtn
                 predBtn.MouseButton1Click:Connect(function()
@@ -293,7 +291,6 @@ local function StartCheat()
                     predBtn.Text = "Prediction: " .. string.format("%.2f", Config.PREDICTION)
                 end)
 
-                -- FOV Size
                 local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 75); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
                 local c3 = Instance.new("UICorner"); c3.CornerRadius = UDim.new(0, 4); c3.Parent = fovSizeBtn
                 fovSizeBtn.MouseButton1Click:Connect(function()
