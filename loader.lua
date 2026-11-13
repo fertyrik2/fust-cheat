@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | New Moder Key ]]
+--[[ FUST | PREMIUM EDITION | Key Window Fix ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -21,7 +21,6 @@ end)
 if success and type(result) == "table" then 
     KEY_DATABASE = result
 else
-    -- Резервные ключи (твой новый и клиента)
     KEY_DATABASE = { 
         ["moder2563546"] = {role = "moder", user = "fustmycheat"},
         ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"}
@@ -33,6 +32,13 @@ end
 -- ==========================================
 local UserRole = "free"
 local MyUsername = LP.Name
+
+-- Принудительная очистка старых окон при запуске
+pcall(function() 
+    for _, v in pairs(CoreGui:GetChildren()) do 
+        if v.Name == "KeySystemGui" then v:Destroy() end 
+    end 
+end)
 
 local KeyGui = Instance.new("ScreenGui"); KeyGui.Name = "KeySystemGui"; KeyGui.ResetOnSpawn = false; KeyGui.Parent = CoreGui
 local KeyFrame = Instance.new("Frame"); KeyFrame.Size = UDim2.new(0, 250, 0, 120); KeyFrame.Position = UDim2.new(0.5, -125, 0.5, -60); KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); KeyFrame.Parent = KeyGui
@@ -403,6 +409,9 @@ Submit.MouseButton1Click:Connect(function()
     if keyData then
         if keyData.user == MyUsername then
             UserRole = keyData.role
+            -- ФИКС: Скрываем окно и ждем долю секунды перед запуском
+            KeyGui.Enabled = false
+            task.wait(0.1) 
             KeyGui:Destroy()
             StartCheat()
         else
