@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Full Moder/Premium Access ]]
+--[[ FUST | PREMIUM EDITION | Fixed Menu Code ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -35,7 +35,13 @@ local Submit = Instance.new("TextButton"); Submit.Size = UDim2.new(1, -20, 0, 30
 -- ОСНОВНОЙ СКРИПТ
 -- ==========================================
 local function StartCheat()
-    pcall(function() for _, v in pairs(CoreGui:GetChildren()) do if v.Name == "FustMenu" or v.Name == "FOVCircle_New" or v.Name == "FustWatermark" then v:Destroy() end end end)
+    pcall(function() 
+        for _, v in pairs(CoreGui:GetChildren()) do 
+            if v.Name == "FustMenu" or v.Name == "FOVCircle_New" or v.Name == "FustWatermark" then 
+                v:Destroy() 
+            end 
+        end 
+    end)
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
@@ -191,9 +197,7 @@ local function StartCheat()
         return closest
     end
 
-    -- ==========================================
     -- МЕНЮ
-    -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.IgnoreGuiInset = true; MenuGui.Parent = CoreGui
     
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Config.Color; BottomBar.Text = ""; BottomBar.Parent = MenuGui
