@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Fullbright (No Flicker) + Aim Target Selector ]]
+--[[ FUST | PREMIUM EDITION | FOV Cycle 30-50-100-150 ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -40,51 +40,31 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 20, PREDICTION = 0.148,
+        FOV_Size = 50, -- Начинаем с 50
+        PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
     }
 
-    -- ==========================================
-    -- FULLBRIGHT (Без моргания)
-    -- ==========================================
+    -- FULLBRIGHT
     local function SetFullbright(state)
         pcall(function()
             if state then
-                -- Меняем ТОЛЬКО атмосферу и амбиент (один раз)
                 Lighting.Ambient = Color3.fromRGB(255, 255, 255)
                 Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-                
-                local atm = Lighting:FindFirstChild("Fust_Atm")
-                if not atm then
-                    atm = Instance.new("Atmosphere")
-                    atm.Name = "Fust_Atm"
-                    atm.Parent = Lighting
-                end
-                atm.Density = 0
-                atm.Haze = 0
-                
-                local cc = Lighting:FindFirstChild("Fust_CC")
-                if not cc then
-                    cc = Instance.new("ColorCorrectionEffect")
-                    cc.Name = "Fust_CC"
-                    cc.Parent = Lighting
-                end
-                cc.Brightness = 0.1 -- Очень мягко
+                local atm = Lighting:FindFirstChild("Fust_Atm") or Instance.new("Atmosphere", Lighting)
+                atm.Name = "Fust_Atm"; atm.Density = 0; atm.Haze = 0
+                local cc = Lighting:FindFirstChild("Fust_CC") or Instance.new("ColorCorrectionEffect", Lighting)
+                cc.Name = "Fust_CC"; cc.Brightness = 0.1
             else
-                -- Возвращаем как было
-                local atm = Lighting:FindFirstChild("Fust_Atm")
-                if atm then atm.Density = 0.3 end
-                local cc = Lighting:FindFirstChild("Fust_CC")
-                if cc then cc.Brightness = 0 end
+                local atm = Lighting:FindFirstChild("Fust_Atm"); if atm then atm.Density = 0.3 end
+                local cc = Lighting:FindFirstChild("Fust_CC"); if cc then cc.Brightness = 0 end
             end
         end)
     end
 
-    -- ==========================================
     -- NO DECO
-    -- ==========================================
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
     local function CheckAndHide(part)
         if not part:IsA("BasePart") then return end
@@ -93,17 +73,13 @@ local function StartCheat()
     for _, obj in ipairs(Workspace:GetDescendants()) do CheckAndHide(obj) end
     Workspace.DescendantAdded:Connect(CheckAndHide)
 
-    -- ==========================================
     -- FOV CIRCLE
-    -- ==========================================
     local FOV_GUI = Instance.new("ScreenGui"); FOV_GUI.Name = "FOVCircle_New"; FOV_GUI.ResetOnSpawn = false; FOV_GUI.IgnoreGuiInset = true; FOV_GUI.Parent = CoreGui
     local FOV_Frame = Instance.new("Frame"); FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2); FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size); FOV_Frame.BackgroundTransparency = 1; FOV_Frame.Parent = FOV_GUI
     local FOV_Stroke = Instance.new("UIStroke"); FOV_Stroke.Color = Config.Color; FOV_Stroke.Thickness = 1; FOV_Stroke.Parent = FOV_Frame
     local FOV_Corner = Instance.new("UICorner"); FOV_Corner.CornerRadius = UDim.new(0.5, 0); FOV_Corner.Parent = FOV_Frame
 
-    -- ==========================================
     -- ESP
-    -- ==========================================
     local ESP = {}; local Cache = {}
     local function CreateESP(pl)
         if pl == LP or ESP[pl] then return end
@@ -145,9 +121,7 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    -- ==========================================
-    -- АИМ (100% точность + выбор части тела)
-    -- ==========================================
+    -- АИМ
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
@@ -184,13 +158,11 @@ local function StartCheat()
         return closest
     end
 
-    -- ==========================================
     -- МЕНЮ
-    -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
-    local menuHeight = 220 + (UserRole == "moder" and 120 or 0)
+    local menuHeight = 280 + (UserRole == "moder" and 120 or 0)
     local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, menuHeight); MainFrame.Position = UDim2.new(0.5, -75, 1, -20 - menuHeight); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1; stroke.Parent = MainFrame
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
@@ -216,11 +188,26 @@ local function StartCheat()
     CreateToggle("WallCheck", "WallCheck", 125)
     CreateToggle("NoDeco", "NoDeco_Enabled", 155)
     
+    -- Кнопка FOV (30-50-100-150)
+    local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 25); fovSizeBtn.Position = UDim2.new(0, 5, 0, 185); fovSizeBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 12; fovSizeBtn.Parent = MainFrame
+    local bCornerFov = Instance.new("UICorner"); bCornerFov.CornerRadius = UDim.new(0, 4); bCornerFov.Parent = fovSizeBtn
+    fovSizeBtn.MouseButton1Click:Connect(function()
+        -- Переключаем 30 -> 50 -> 100 -> 150
+        if Config.FOV_Size == 30 then Config.FOV_Size = 50
+        elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
+        elseif Config.FOV_Size == 100 then Config.FOV_Size = 150
+        else Config.FOV_Size = 30 end
+        fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size
+        -- Обновляем визуальный круг
+        FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
+        FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
+    end)
+
     if UserRole == "moder" then
-        CreateToggle("Skeleton", "SkeletonESP", 185)
-        CreateToggle("WeaponESP", "WeaponESP", 215)
+        CreateToggle("Skeleton", "SkeletonESP", 215)
+        CreateToggle("WeaponESP", "WeaponESP", 245)
         
-        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 245); partBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
+        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 275); partBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = partBtn
         partBtn.MouseButton1Click:Connect(function()
             if Config.TargetPart == "Head" then Config.TargetPart = "Torso"
@@ -229,15 +216,12 @@ local function StartCheat()
             partBtn.Text = "Target: " .. Config.TargetPart
         end)
 
-        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 275); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
+        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 305); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "Camera FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
         local bCorner2 = Instance.new("UICorner"); bCorner2.CornerRadius = UDim.new(0, 4); bCorner2.Parent = fovBtn
-        fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "FOV: " .. Config.CurrentFOV end)
+        fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "Camera FOV: " .. Config.CurrentFOV end)
     end
     BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
-    -- ==========================================
-    -- ЦИКЛ
-    -- ==========================================
     local acc = 0
     RunService.RenderStepped:Connect(function(dt)
         acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
