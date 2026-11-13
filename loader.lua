@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Neokcep Style Menu ]]
+--[[ FUST | PREMIUM EDITION | Custom Sky + Neokcep Menu ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -39,6 +39,7 @@ local function StartCheat()
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
+        CustomSky_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
         FOV_Size = 50, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
@@ -68,7 +69,9 @@ local function StartCheat()
         end
     end)
 
-    -- FULLBRIGHT
+    -- ==========================================
+    -- ФУНКЦИИ ВИЗУАЛА
+    -- ==========================================
     local function SetFullbright(state)
         pcall(function()
             if state then
@@ -84,7 +87,24 @@ local function StartCheat()
         end)
     end
 
-    -- NO DECO
+    local function SetCustomSky(state)
+        pcall(function()
+            if state then
+                local oldSky = Lighting:FindFirstChild("FustSky")
+                if oldSky then oldSky:Destroy() end
+                local sky = Instance.new("Sky")
+                sky.Name = "FustSky"
+                local skyTexture = "rbxassetid://1146126345" -- Космос
+                sky.SkyboxBk = skyTexture; sky.SkyboxDn = skyTexture; sky.SkyboxFt = skyTexture; sky.SkyboxLf = skyTexture; sky.SkyboxRt = skyTexture; sky.SkyboxUp = skyTexture
+                sky.Clouds = ""; sky.CelestialBodiesShown = false; sky.StarCount = 3000
+                sky.Parent = Lighting
+            else
+                local oldSky = Lighting:FindFirstChild("FustSky")
+                if oldSky then oldSky:Destroy() end
+            end
+        end)
+    end
+
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
     local function CheckAndHide(part)
         if not part:IsA("BasePart") then return end
@@ -182,43 +202,33 @@ local function StartCheat()
     -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.IgnoreGuiInset = true; MenuGui.Parent = CoreGui
     
-    -- Кнопка открытия (внизу справа, маленькая)
     local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Size = UDim2.new(0, 120, 0, 30); ToggleBtn.Position = UDim2.new(0, 10, 0.5, 0); ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 10, 20); ToggleBtn.Text = "МЕНЮ"; ToggleBtn.TextColor3 = Config.Color; ToggleBtn.Font = Enum.Font.GothamBold; ToggleBtn.TextSize = 14; ToggleBtn.Parent = MenuGui
     local toggleCorner = Instance.new("UICorner"); toggleCorner.CornerRadius = UDim.new(0, 6); toggleCorner.Parent = ToggleBtn
     local toggleStroke = Instance.new("UIStroke"); toggleStroke.Color = Config.Color; toggleStroke.Thickness = 1; toggleStroke.Parent = ToggleBtn
 
-    -- Основное окно
     local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 500, 0, 300); MainFrame.Position = UDim2.new(0.5, -250, 0.5, -150); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 8); mCorner.Parent = MainFrame
     local mStroke = Instance.new("UIStroke"); mStroke.Color = Config.Color; mStroke.Thickness = 1.5; mStroke.Parent = MainFrame
 
-    -- Левая панель (Вкладки)
     local Sidebar = Instance.new("Frame"); Sidebar.Size = UDim2.new(0, 120, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(12, 8, 18); Sidebar.Parent = MainFrame
     local sCorner = Instance.new("UICorner"); sCorner.CornerRadius = UDim.new(0, 8); sCorner.Parent = Sidebar
     
-    -- Название в сайдбаре
     local Logo = Instance.new("TextLabel"); Logo.Size = UDim2.new(1, 0, 0, 40); Logo.Position = UDim2.new(0, 0, 0, 10); Logo.BackgroundTransparency = 1; Logo.Text = "FUST\nPREMIUM"; Logo.TextColor3 = Config.Color; Logo.Font = Enum.Font.GothamBlack; Logo.TextSize = 16; Logo.Parent = Sidebar
 
-    -- Контентная часть
     local Content = Instance.new("Frame"); Content.Size = UDim2.new(1, -120, 1, -20); Content.Position = UDim2.new(0, 120, 0, 10); Content.BackgroundTransparency = 1; Content.Parent = MainFrame
 
-    -- Функция переключения вкладок
     local Tabs = {}
     local function CreateTab(name, icon)
         local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 30); btn.Position = UDim2.new(0, 5, 0, 60 + (#Tabs * 35)); btn.BackgroundTransparency = 1; btn.Text = " " .. icon .. " " .. name; btn.TextColor3 = Color3.fromRGB(150, 150, 150); btn.Font = Enum.Font.GothamMedium; btn.TextSize = 13; btn.TextXAlignment = Enum.TextXAlignment.Left; btn.Parent = Sidebar
         table.insert(Tabs, {btn = btn, name = name})
         
         btn.MouseButton1Click:Connect(function()
-            for _, t in ipairs(Tabs) do
-                t.btn.TextColor3 = Color3.fromRGB(150, 150, 150)
-            end
+            for _, t in ipairs(Tabs) do t.btn.TextColor3 = Color3.fromRGB(150, 150, 150) end
             btn.TextColor3 = Config.Color
             
-            -- Очищаем контент и создаем новые кнопки
             for _, v in pairs(Content:GetChildren()) do if v:IsA("TextButton") or v:IsA("TextLabel") then v:Destroy() end end
             
             if name == "Combat" then
-                -- Кнопки для Combat
                 local function AddToggle(tName, key, pos)
                     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
                     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
@@ -229,18 +239,17 @@ local function StartCheat()
                 AddToggle("WallCheck", "WallCheck", 85)
                 
             elseif name == "Visuals" then
-                -- Кнопки для Visuals
-                local function AddToggle(tName, key, pos)
+                local function AddToggle(tName, key, pos, callback)
                     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
                     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
-                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); if callback then callback(Config[key]) end end)
                 end
                 AddToggle("ESP", "ESP_Enabled", 5)
-                AddToggle("Fullbright", "Fullbright_Enabled", 45)
-                AddToggle("NoDeco", "NoDeco_Enabled", 85)
+                AddToggle("Fullbright", "Fullbright_Enabled", 45, SetFullbright)
+                AddToggle("Custom Sky", "CustomSky_Enabled", 85, SetCustomSky) -- НОВАЯ КНОПКА
+                AddToggle("NoDeco", "NoDeco_Enabled", 125)
                 
             elseif name == "Player" and UserRole == "moder" then
-                -- Кнопки для Player
                 local function AddToggle(tName, key, pos)
                     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
                     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
@@ -256,15 +265,12 @@ local function StartCheat()
     CreateTab("Visuals", "👁️")
     if UserRole == "moder" then CreateTab("Player", "👤") end
 
-    -- Кнопка открытия/закрытия
     ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
-    -- Перетаскивание меню
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = MainFrame.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
     UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
-    -- Главный цикл
     local acc = 0
     RunService.RenderStepped:Connect(function(dt)
         acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
