@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Watermark + Black-Purple UI ]]
+--[[ FUST | PREMIUM EDITION | Neokcep Style Menu ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -40,32 +40,21 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 50,
-        PREDICTION = 0.148,
-        Color = Color3.fromRGB(150, 80, 255), -- Фиолетовый акцент
+        FOV_Size = 50, PREDICTION = 0.148,
+        Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
     }
 
-    -- ==========================================
-    -- WATERMARK (Правый нижний угол)
-    -- ==========================================
+    -- WATERMARK
     local WM_Gui = Instance.new("ScreenGui"); WM_Gui.Name = "FustWatermark"; WM_Gui.ResetOnSpawn = false; WM_Gui.IgnoreGuiInset = true; WM_Gui.Parent = CoreGui
-    local WM_Frame = Instance.new("Frame")
-    WM_Frame.Size = UDim2.new(0, 200, 0, 65)
-    WM_Frame.Position = UDim2.new(1, -210, 1, -80)
-    WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
-    WM_Frame.BackgroundTransparency = 0.2
-    WM_Frame.Parent = WM_Gui
-    
+    local WM_Frame = Instance.new("Frame"); WM_Frame.Size = UDim2.new(0, 200, 0, 65); WM_Frame.Position = UDim2.new(1, -210, 1, -80); WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); WM_Frame.BackgroundTransparency = 0.2; WM_Frame.Parent = WM_Gui
     local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 6); wmCorner.Parent = WM_Frame
     local wmStroke = Instance.new("UIStroke"); wmStroke.Color = Config.Color; wmStroke.Thickness = 1; wmStroke.Parent = WM_Frame
-    
     local TitleLbl = Instance.new("TextLabel"); TitleLbl.Size = UDim2.new(1, 0, 0, 20); TitleLbl.Position = UDim2.new(0, 0, 0, 5); TitleLbl.BackgroundTransparency = 1; TitleLbl.Text = "FUST | PREMIUM"; TitleLbl.TextColor3 = Config.Color; TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.TextSize = 14; TitleLbl.Parent = WM_Frame
     local FpsLbl = Instance.new("TextLabel"); FpsLbl.Size = UDim2.new(1, 0, 0, 15); FpsLbl.Position = UDim2.new(0, 0, 0, 25); FpsLbl.BackgroundTransparency = 1; FpsLbl.Text = "FPS: 60 | Players: 1"; FpsLbl.TextColor3 = Color3.new(1,1,1); FpsLbl.Font = Enum.Font.Gotham; FpsLbl.TextSize = 12; FpsLbl.Parent = WM_Frame
     local UserLbl = Instance.new("TextLabel"); UserLbl.Size = UDim2.new(1, 0, 0, 15); UserLbl.Position = UDim2.new(0, 0, 0, 45); UserLbl.BackgroundTransparency = 1; UserLbl.Text = "Role: " .. UserRole; UserLbl.TextColor3 = Color3.fromRGB(200, 200, 200); UserLbl.Font = Enum.Font.Gotham; UserLbl.TextSize = 11; UserLbl.Parent = WM_Frame
 
-    -- Обновление Watermark (FPS и Игроки)
     local fpsCounter = 0
     local lastTime = tick()
     RunService.RenderStepped:Connect(function()
@@ -79,14 +68,11 @@ local function StartCheat()
         end
     end)
 
-    -- ==========================================
     -- FULLBRIGHT
-    -- ==========================================
     local function SetFullbright(state)
         pcall(function()
             if state then
-                Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-                Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+                Lighting.Ambient = Color3.fromRGB(255, 255, 255); Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
                 local atm = Lighting:FindFirstChild("Fust_Atm") or Instance.new("Atmosphere", Lighting)
                 atm.Name = "Fust_Atm"; atm.Density = 0; atm.Haze = 0
                 local cc = Lighting:FindFirstChild("Fust_CC") or Instance.new("ColorCorrectionEffect", Lighting)
@@ -155,7 +141,7 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    -- АИМ
+    -- AIM
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
@@ -165,7 +151,6 @@ local function StartCheat()
                 local aimPart = data.Head
                 if Config.TargetPart == "Torso" then aimPart = data.Char:FindFirstChild("UpperTorso") or data.Char:FindFirstChild("Torso") or data.HRP
                 elseif Config.TargetPart == "Legs" then aimPart = data.Char:FindFirstChild("LeftUpperLeg") or data.Char:FindFirstChild("RightUpperLeg") or data.HRP end
-                
                 if aimPart and not (Config.TeamCheck and pl.Team == LP.Team) then
                     local realDist = (aimPart.Position - Camera.CFrame.Position).Magnitude
                     if realDist <= Config.AIM_Range then
@@ -193,73 +178,93 @@ local function StartCheat()
     end
 
     -- ==========================================
-    -- МЕНЮ (Черно-фиолетовое)
+    -- МЕНЮ (Стиль Neokcep)
     -- ==========================================
-    local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
-    local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(150, 80, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
-    local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
+    local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.IgnoreGuiInset = true; MenuGui.Parent = CoreGui
     
-    local menuHeight = 280 + (UserRole == "moder" and 120 or 0)
-    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 170, 0, menuHeight); MainFrame.Position = UDim2.new(0.5, -85, 1, -20 - menuHeight); MainFrame.BackgroundColor3 = Color3.fromRGB(12, 8, 18); MainFrame.Visible = false; MainFrame.Parent = MenuGui
-    local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1.5; stroke.Parent = MainFrame
-    local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
-    
-    -- Заголовок меню
-    local Header = Instance.new("TextLabel"); Header.Size = UDim2.new(1, 0, 0, 25); Header.Position = UDim2.new(0, 0, 0, 5); Header.BackgroundTransparency = 1; Header.Text = "FUST PREMIUM"; Header.TextColor3 = Config.Color; Header.Font = Enum.Font.GothamBold; Header.TextSize = 14; Header.Parent = MainFrame
+    -- Кнопка открытия (внизу справа, маленькая)
+    local ToggleBtn = Instance.new("TextButton"); ToggleBtn.Size = UDim2.new(0, 120, 0, 30); ToggleBtn.Position = UDim2.new(0, 10, 0.5, 0); ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 10, 20); ToggleBtn.Text = "МЕНЮ"; ToggleBtn.TextColor3 = Config.Color; ToggleBtn.Font = Enum.Font.GothamBold; ToggleBtn.TextSize = 14; ToggleBtn.Parent = MenuGui
+    local toggleCorner = Instance.new("UICorner"); toggleCorner.CornerRadius = UDim.new(0, 6); toggleCorner.Parent = ToggleBtn
+    local toggleStroke = Instance.new("UIStroke"); toggleStroke.Color = Config.Color; toggleStroke.Thickness = 1; toggleStroke.Parent = ToggleBtn
 
+    -- Основное окно
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 500, 0, 300); MainFrame.Position = UDim2.new(0.5, -250, 0.5, -150); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 8); mCorner.Parent = MainFrame
+    local mStroke = Instance.new("UIStroke"); mStroke.Color = Config.Color; mStroke.Thickness = 1.5; mStroke.Parent = MainFrame
+
+    -- Левая панель (Вкладки)
+    local Sidebar = Instance.new("Frame"); Sidebar.Size = UDim2.new(0, 120, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(12, 8, 18); Sidebar.Parent = MainFrame
+    local sCorner = Instance.new("UICorner"); sCorner.CornerRadius = UDim.new(0, 8); sCorner.Parent = Sidebar
+    
+    -- Название в сайдбаре
+    local Logo = Instance.new("TextLabel"); Logo.Size = UDim2.new(1, 0, 0, 40); Logo.Position = UDim2.new(0, 0, 0, 10); Logo.BackgroundTransparency = 1; Logo.Text = "FUST\nPREMIUM"; Logo.TextColor3 = Config.Color; Logo.Font = Enum.Font.GothamBlack; Logo.TextSize = 16; Logo.Parent = Sidebar
+
+    -- Контентная часть
+    local Content = Instance.new("Frame"); Content.Size = UDim2.new(1, -120, 1, -20); Content.Position = UDim2.new(0, 120, 0, 10); Content.BackgroundTransparency = 1; Content.Parent = MainFrame
+
+    -- Функция переключения вкладок
+    local Tabs = {}
+    local function CreateTab(name, icon)
+        local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 30); btn.Position = UDim2.new(0, 5, 0, 60 + (#Tabs * 35)); btn.BackgroundTransparency = 1; btn.Text = " " .. icon .. " " .. name; btn.TextColor3 = Color3.fromRGB(150, 150, 150); btn.Font = Enum.Font.GothamMedium; btn.TextSize = 13; btn.TextXAlignment = Enum.TextXAlignment.Left; btn.Parent = Sidebar
+        table.insert(Tabs, {btn = btn, name = name})
+        
+        btn.MouseButton1Click:Connect(function()
+            for _, t in ipairs(Tabs) do
+                t.btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+            end
+            btn.TextColor3 = Config.Color
+            
+            -- Очищаем контент и создаем новые кнопки
+            for _, v in pairs(Content:GetChildren()) do if v:IsA("TextButton") or v:IsA("TextLabel") then v:Destroy() end end
+            
+            if name == "Combat" then
+                -- Кнопки для Combat
+                local function AddToggle(tName, key, pos)
+                    local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
+                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
+                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                end
+                AddToggle("Aim", "Aim_Enabled", 5)
+                AddToggle("TeamCheck", "TeamCheck", 45)
+                AddToggle("WallCheck", "WallCheck", 85)
+                
+            elseif name == "Visuals" then
+                -- Кнопки для Visuals
+                local function AddToggle(tName, key, pos)
+                    local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
+                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
+                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                end
+                AddToggle("ESP", "ESP_Enabled", 5)
+                AddToggle("Fullbright", "Fullbright_Enabled", 45)
+                AddToggle("NoDeco", "NoDeco_Enabled", 85)
+                
+            elseif name == "Player" and UserRole == "moder" then
+                -- Кнопки для Player
+                local function AddToggle(tName, key, pos)
+                    local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 35); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 14; b.Parent = Content
+                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
+                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                end
+                AddToggle("Skeleton", "SkeletonESP", 5)
+                AddToggle("WeaponESP", "WeaponESP", 45)
+            end
+        end)
+    end
+
+    CreateTab("Combat", "🎯")
+    CreateTab("Visuals", "👁️")
+    if UserRole == "moder" then CreateTab("Player", "👤") end
+
+    -- Кнопка открытия/закрытия
+    ToggleBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
+    -- Перетаскивание меню
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = MainFrame.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
     UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
-    local function CreateToggle(name, key, pos, callback)
-        local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 25); btn.Position = UDim2.new(0, 5, 0, pos + 25); btn.BackgroundColor3 = Color3.fromRGB(25, 15, 35); btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF"); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Gotham; btn.TextSize = 12; btn.Parent = MainFrame
-        local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = btn
-        btn.MouseButton1Click:Connect(function()
-            Config[key] = not Config[key]; btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
-            if callback then callback(Config[key]) end
-            if key == "ESP_Enabled" and not Config.ESP_Enabled then for _, e in pairs(ESP) do for _, obj in pairs(e) do if obj.Remove then obj.Visible = false end end; for _, b in ipairs(e.bones) do b.Visible = false end end end
-        end)
-    end
-
-    CreateToggle("ESP", "ESP_Enabled", 0)
-    CreateToggle("Aim", "Aim_Enabled", 30)
-    CreateToggle("Fullbright", "Fullbright_Enabled", 60, SetFullbright)
-    CreateToggle("TeamCheck", "TeamCheck", 90)
-    CreateToggle("WallCheck", "WallCheck", 120)
-    CreateToggle("NoDeco", "NoDeco_Enabled", 150)
-    
-    -- Кнопка FOV
-    local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 25); fovSizeBtn.Position = UDim2.new(0, 5, 0, 180 + 25); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 12; fovSizeBtn.Parent = MainFrame
-    local bCornerFov = Instance.new("UICorner"); bCornerFov.CornerRadius = UDim.new(0, 4); bCornerFov.Parent = fovSizeBtn
-    fovSizeBtn.MouseButton1Click:Connect(function()
-        if Config.FOV_Size == 30 then Config.FOV_Size = 50
-        elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
-        elseif Config.FOV_Size == 100 then Config.FOV_Size = 150
-        else Config.FOV_Size = 30 end
-        fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size
-        FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
-        FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
-    end)
-
-    if UserRole == "moder" then
-        CreateToggle("Skeleton", "SkeletonESP", 210)
-        CreateToggle("WeaponESP", "WeaponESP", 240)
-        
-        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 270 + 25); partBtn.BackgroundColor3 = Config.Color; partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
-        local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = partBtn
-        partBtn.MouseButton1Click:Connect(function()
-            if Config.TargetPart == "Head" then Config.TargetPart = "Torso"
-            elseif Config.TargetPart == "Torso" then Config.TargetPart = "Legs"
-            else Config.TargetPart = "Head" end
-            partBtn.Text = "Target: " .. Config.TargetPart
-        end)
-
-        local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 25); camFovBtn.Position = UDim2.new(0, 5, 0, 300 + 25); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Cam FOV: 70"; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 12; camFovBtn.Parent = MainFrame
-        local bCorner2 = Instance.new("UICorner"); bCorner2.CornerRadius = UDim.new(0, 4); bCorner2.Parent = camFovBtn
-        camFovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; camFovBtn.Text = "Cam FOV: " .. Config.CurrentFOV end)
-    end
-    BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
-
+    -- Главный цикл
     local acc = 0
     RunService.RenderStepped:Connect(function(dt)
         acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
@@ -336,18 +341,15 @@ end
 Submit.MouseButton1Click:Connect(function()
     local enteredKey = Input.Text
     local keyData = KEY_DATABASE[enteredKey]
-    
     if keyData then
         if keyData.user == MyUsername then
             UserRole = keyData.role
             KeyGui:Destroy()
             StartCheat()
         else
-            Input.Text = ""
-            Input.PlaceholderText = "Ключ привязан к " .. keyData.user
+            Input.Text = ""; Input.PlaceholderText = "Ключ привязан к " .. keyData.user
         end
     else
-        Input.Text = ""
-        Input.PlaceholderText = "Неверный ключ!"
+        Input.Text = ""; Input.PlaceholderText = "Неверный ключ!"
     end
 end)
