@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Improved Far Bullets ]]
+--[[ FUST | PREMIUM EDITION | Bow Hook (RISKY) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -7,6 +7,7 @@ local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
+local RS = game:GetService("ReplicatedStorage")
 
 -- ==========================================
 -- ЗАГРУЗКА КЛЮЧЕЙ
@@ -56,6 +57,7 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false, FarBullets_Enabled = false,
+        BowHook_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
         FOV_Size = 50, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
@@ -116,19 +118,51 @@ local function StartCheat()
         end)
     end
 
-    -- УЛУЧШЕННЫЙ NO BULLET DROP (Ловит все быстро летящие объекты)
+    -- ==========================================
+    -- ХУК НА ЛУК (РИСКОВАННЫЙ)
+    -- ==========================================
+    local oldNamecall
+    oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        
+        -- Если включен BowHook и игра пытается отправить выстрел (Raycast или FireServer)
+        if Config.BowHook_Enabled and (method == "Raycast" or method == "FireServer") then
+            if not checkcaller() then
+                local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
+                -- Проверяем, что в руках именно Лук
+                if tool and (tool.Name:lower():find("bow") or tool.Name:lower():find("arrow") or tool.Name:lower():find("лук")) then
+                    local args = {...}
+                    if Target then
+                        -- Подменяем координаты на цель (с поправкой на высоту)
+                        for i, v in ipairs(args) do
+                            if typeof(v) == "Vector3" then
+                                local aimPos = Target.Position
+                                -- Поправка на падение стрелы (стреляем выше)
+                                local dist = (aimPos - Camera.CFrame.Position).Magnitude
+                                aimPos = aimPos + Vector3.new(0, dist * 0.05, 0)
+                                args[i] = aimPos
+                            elseif typeof(v) == "CFrame" then
+                                args[i] = CFrame.new(Target.Position)
+                            end
+                        end
+                        return oldNamecall(self, table.unpack(args))
+                    end
+                end
+            end
+        end
+        return oldNamecall(self, ...)
+    end))
+
+    -- NO BULLET DROP (клиентский)
     Workspace.DescendantAdded:Connect(function(obj)
         if not Config.FarBullets_Enabled then return end
         if obj:IsA("BasePart") then
-            task.wait(0.05) -- Ждем, пока объект наберет скорость
+            task.wait(0.05)
             pcall(function()
-                -- Если объект летит быстро (пуля или стрела)
                 if obj.AssemblyLinearVelocity.Magnitude > 20 then
-                    -- Отключаем гравитацию
                     local bf = Instance.new("BodyForce")
                     bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
                     bf.Parent = obj
-                    -- Увеличиваем скорость в 2 раза (чтобы летело дальше)
                     obj.AssemblyLinearVelocity = obj.AssemblyLinearVelocity * 2
                 end
             end)
@@ -296,6 +330,7 @@ local function StartCheat()
                 AddToggle("Skeleton", "SkeletonESP", 5)
                 AddToggle("WeaponESP", "WeaponESP", 40)
                 AddToggle("Far Bullets", "FarBullets_Enabled", 75)
+                AddToggle("Bow Hook (RISKY)", "BowHook_Enabled", 110)
                 
             elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
                 local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 5); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
