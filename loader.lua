@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Compact Menu + Bottom Bar ]]
+--[[ FUST | PREMIUM EDITION | Full Moder/Premium Access ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -47,7 +47,7 @@ local function StartCheat()
         TargetPart = "Head"
     }
 
-    -- WATERMARK (Прозрачный)
+    -- WATERMARK
     local WM_Gui = Instance.new("ScreenGui"); WM_Gui.Name = "FustWatermark"; WM_Gui.ResetOnSpawn = false; WM_Gui.IgnoreGuiInset = true; WM_Gui.Parent = CoreGui
     local WM_Frame = Instance.new("Frame"); WM_Frame.Size = UDim2.new(0, 200, 0, 65); WM_Frame.Position = UDim2.new(1, -210, 1, -80); WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); WM_Frame.BackgroundTransparency = 0.6; WM_Frame.Parent = WM_Gui
     local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 6); wmCorner.Parent = WM_Frame
@@ -69,7 +69,7 @@ local function StartCheat()
         end
     end)
 
-    -- ФУНКЦИИ
+    -- ФУНКЦИИ ВИЗУАЛА
     local function SetFullbright(state)
         pcall(function()
             if state then
@@ -192,20 +192,17 @@ local function StartCheat()
     end
 
     -- ==========================================
-    -- МЕНЮ (Уменьшенное + Полоска)
+    -- МЕНЮ
     -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.IgnoreGuiInset = true; MenuGui.Parent = CoreGui
     
-    -- Полоска внизу
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Config.Color; BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
 
-    -- Уменьшенное меню (380x240)
     local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 380, 0, 240); MainFrame.Position = UDim2.new(0.5, -190, 0.5, -120); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 8); mCorner.Parent = MainFrame
     local mStroke = Instance.new("UIStroke"); mStroke.Color = Config.Color; mStroke.Thickness = 1.5; mStroke.Parent = MainFrame
 
-    -- Сайдбар (100px)
     local Sidebar = Instance.new("Frame"); Sidebar.Size = UDim2.new(0, 100, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(12, 8, 18); Sidebar.Parent = MainFrame
     local sCorner = Instance.new("UICorner"); sCorner.CornerRadius = UDim.new(0, 8); sCorner.Parent = Sidebar
     
@@ -234,6 +231,17 @@ local function StartCheat()
                 AddToggle("TeamCheck", "TeamCheck", 40)
                 AddToggle("WallCheck", "WallCheck", 75)
                 
+                if UserRole == "moder" or UserRole == "premium" then
+                    local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 30); partBtn.Position = UDim2.new(0, 5, 0, 110); partBtn.BackgroundColor3 = Config.Color; partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 13; partBtn.Parent = Content
+                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = partBtn
+                    partBtn.MouseButton1Click:Connect(function()
+                        if Config.TargetPart == "Head" then Config.TargetPart = "Torso"
+                        elseif Config.TargetPart == "Torso" then Config.TargetPart = "Legs"
+                        else Config.TargetPart = "Head" end
+                        partBtn.Text = "Target: " .. Config.TargetPart
+                    end)
+                end
+                
             elseif name == "Visuals" then
                 local function AddToggle(tName, key, pos, callback)
                     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 30); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.Parent = Content
@@ -245,7 +253,7 @@ local function StartCheat()
                 AddToggle("Custom Sky", "CustomSky_Enabled", 75, SetCustomSky)
                 AddToggle("NoDeco", "NoDeco_Enabled", 110)
                 
-            elseif name == "Player" and UserRole == "moder" then
+            elseif name == "Player" and (UserRole == "moder" or UserRole == "premium") then
                 local function AddToggle(tName, key, pos)
                     local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 30); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.Parent = Content
                     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
@@ -253,13 +261,33 @@ local function StartCheat()
                 end
                 AddToggle("Skeleton", "SkeletonESP", 5)
                 AddToggle("WeaponESP", "WeaponESP", 40)
+                
+            elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
+                local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 5); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
+                local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = fovSizeBtn
+                fovSizeBtn.MouseButton1Click:Connect(function()
+                    if Config.FOV_Size == 30 then Config.FOV_Size = 50
+                    elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
+                    elseif Config.FOV_Size == 100 then Config.FOV_Size = 150
+                    else Config.FOV_Size = 30 end
+                    fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size
+                    FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
+                    FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
+                end)
+
+                local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 30); camFovBtn.Position = UDim2.new(0, 5, 0, 40); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 13; camFovBtn.Parent = Content
+                local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = camFovBtn
+                camFovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV end)
             end
         end)
     end
 
     CreateTab("Combat", "🎯")
     CreateTab("Visuals", "👁️")
-    if UserRole == "moder" then CreateTab("Player", "👤") end
+    if UserRole == "moder" or UserRole == "premium" then 
+        CreateTab("Player", "👤") 
+        CreateTab("Settings", "⚙️")
+    end
 
     BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
@@ -297,7 +325,7 @@ local function StartCheat()
                             e.hpBg.Visible = true; e.hpBg.From = Vector2.new(x - 6, y); e.hpBg.To = Vector2.new(x - 6, y + height)
                             e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height); e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent)); e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
                             
-                            if UserRole == "moder" and Config.WeaponESP then
+                            if (UserRole == "moder" or UserRole == "premium") and Config.WeaponESP then
                                 local toolName = nil
                                 local handTool = data.Char:FindFirstChildOfClass("Tool")
                                 if handTool then toolName = handTool.Name
@@ -308,7 +336,7 @@ local function StartCheat()
                                 if toolName then e.weapon.Visible = true; e.weapon.Text = "[" .. toolName .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16) else e.weapon.Visible = false end
                             else e.weapon.Visible = false end
                             
-                            if UserRole == "moder" and Config.SkeletonESP then
+                            if (UserRole == "moder" or UserRole == "premium") and Config.SkeletonESP then
                                 local function to2d(p) if not p then return nil end local sp, on = cam:WorldToViewportPoint(p.Position) if on then return Vector2.new(sp.X, sp.Y) end return nil end
                                 local h2d, r2d = to2d(data.Head), to2d(data.HRP); local t2d = to2d(data.Char:FindFirstChild("UpperTorso"))
                                 local la, ra = to2d(data.Char:FindFirstChild("LeftUpperArm")), to2d(data.Char:FindFirstChild("RightUpperArm"))
@@ -316,42 +344,4 @@ local function StartCheat()
                                 for _, b in ipairs(e.bones) do b.Visible = false end
                                 if h2d and r2d then e.bones[1].Visible = true; e.bones[1].From = h2d; e.bones[1].To = r2d end
                                 if t2d and r2d then e.bones[2].Visible = true; e.bones[2].From = t2d; e.bones[2].To = r2d end
-                                if t2d and la then e.bones[3].Visible = true; e.bones[3].From = t2d; e.bones[3].To = la end
-                                if t2d and ra then e.bones[4].Visible = true; e.bones[4].From = t2d; e.bones[4].To = ra end
-                                if r2d and ll then e.bones[5].Visible = true; e.bones[5].From = r2d; e.bones[5].To = ll end
-                                if r2d and rl then e.bones[6].Visible = true; e.bones[6].From = r2d; e.bones[6].To = rl end
-                            else for _, b in ipairs(e.bones) do b.Visible = false end end
-                        else
-                            for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
-                            for _, b in ipairs(e.bones) do b.Visible = false end
-                        end
-                    else
-                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
-                        for _, b in ipairs(e.bones) do b.Visible = false end
-                    end
-                else
-                    if e.b1 then
-                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
-                        for _, b in ipairs(e.bones) do b.Visible = false end
-                    end
-                end
-            end
-        end
-    end)
-end
-
-Submit.MouseButton1Click:Connect(function()
-    local enteredKey = Input.Text
-    local keyData = KEY_DATABASE[enteredKey]
-    if keyData then
-        if keyData.user == MyUsername then
-            UserRole = keyData.role
-            KeyGui:Destroy()
-            StartCheat()
-        else
-            Input.Text = ""; Input.PlaceholderText = "Ключ привязан к " .. keyData.user
-        end
-    else
-        Input.Text = ""; Input.PlaceholderText = "Неверный ключ!"
-    end
-end)
+                                if
