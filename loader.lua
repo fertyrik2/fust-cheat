@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Compact Watermark ]]
+--[[ FUST | PREMIUM EDITION | Full Code with Client Key ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,13 +9,25 @@ local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
 
 -- ==========================================
--- ЗАГРУЗКА КЛЮЧЕЙ
+-- ЗАГРУЗКА КЛЮЧЕЙ (С защитой от кэша)
 -- ==========================================
 local KEY_DATABASE = {}
-local KeysUrl = "https://raw.githubusercontent.com/fertyrik2/fust-cheat/main/keys.lua"
-local success, result = pcall(function() return loadstring(game:HttpGet(KeysUrl))() end)
-if success and type(result) == "table" then KEY_DATABASE = result
-else KEY_DATABASE = { ["moder778467526"] = {role = "moder", user = "fust8898"} } end
+-- Добавлено ?t= для сброса кэша GitHub
+local KeysUrl = "https://raw.githubusercontent.com/fertyrik2/fust-cheat/main/keys.lua?t=" .. tostring(tick())
+
+local success, result = pcall(function() 
+    return loadstring(game:HttpGet(KeysUrl))() 
+end)
+
+if success and type(result) == "table" then 
+    KEY_DATABASE = result
+else
+    -- Если GitHub не отвечает, используем резервные ключи (твой и клиента)
+    KEY_DATABASE = { 
+        ["moder778467526"] = {role = "moder", user = "fust8898"},
+        ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri4"}
+    } 
+end
 
 -- ==========================================
 -- KEY SYSTEM UI
