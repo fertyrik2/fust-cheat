@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Fullbright (All Roles) ]]
+--[[ FUST | PREMIUM EDITION | 100% Aim + Target Selector ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -58,62 +58,41 @@ local function StartCheat()
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true,
-        Fullbright_Enabled = false, -- Новая кнопка
+        Fullbright_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 20, SMOOTHNESS = 0.65, PREDICTION = 0.148,
+        FOV_Size = 20, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
-        SkeletonESP = false, WeaponESP = false, CurrentFOV = 70
+        SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
+        
+        -- НОВОЕ: Выбор части тела
+        TargetPart = "Head" -- Head, Torso, Legs
     }
 
     -- ==========================================
-    -- FULLBRIGHT ФУНКЦИЯ (Стабильная)
+    -- FULLBRIGHT
     -- ==========================================
     local function SetFullbright(state)
         pcall(function()
             if state then
-                -- Включаем день и убираем туман
                 Lighting.ClockTime = 14
                 Lighting.FogEnd = 100000
                 Lighting.FogStart = 0
-                
-                local atm = Lighting:FindFirstChild("Fust_Atm")
-                if not atm then
-                    atm = Instance.new("Atmosphere")
-                    atm.Name = "Fust_Atm"
-                    atm.Parent = Lighting
-                end
-                atm.Density = 0
-                atm.Offset = 0
-                atm.Haze = 0
-                
-                local cc = Lighting:FindFirstChild("Fust_CC")
-                if not cc then
-                    cc = Instance.new("ColorCorrectionEffect")
-                    cc.Name = "Fust_CC"
-                    cc.Parent = Lighting
-                end
-                cc.Brightness = 0.25
-                cc.Contrast = 0.1
-                cc.TintColor = Color3.fromRGB(255, 255, 255)
+                local atm = Lighting:FindFirstChild("Fust_Atm") or Instance.new("Atmosphere", Lighting)
+                atm.Name = "Fust_Atm"; atm.Density = 0; atm.Offset = 0; atm.Haze = 0
+                local cc = Lighting:FindFirstChild("Fust_CC") or Instance.new("ColorCorrectionEffect", Lighting)
+                cc.Name = "Fust_CC"; cc.Brightness = 0.25; cc.Contrast = 0.1; cc.TintColor = Color3.fromRGB(255, 255, 255)
             else
-                -- Возвращаем как было (просто убираем наши эффекты)
-                local atm = Lighting:FindFirstChild("Fust_Atm")
-                if atm then atm.Density = 0.3 end -- Стандартная плотность Roblox
-                
-                local cc = Lighting:FindFirstChild("Fust_CC")
-                if cc then cc.Brightness = 0 end
+                local atm = Lighting:FindFirstChild("Fust_Atm"); if atm then atm.Density = 0.3 end
+                local cc = Lighting:FindFirstChild("Fust_CC"); if cc then cc.Brightness = 0 end
             end
         end)
     end
 
-    -- Защита от сброса дня (раз в 2 секунды)
     task.spawn(function()
         while task.wait(2) do
             if Config.Fullbright_Enabled then
                 pcall(function()
-                    if Lighting.ClockTime < 6 or Lighting.ClockTime > 18 then
-                        Lighting.ClockTime = 14
-                    end
+                    if Lighting.ClockTime < 6 or Lighting.ClockTime > 18 then Lighting.ClockTime = 14 end
                 end)
             end
         end
@@ -173,29 +152,42 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
+    -- ==========================================
+    -- АИМ (100% Точность + Выбор части тела)
+    -- ==========================================
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
         local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2); local closest = nil; local shortestDist = Config.FOV_Size
         for pl, data in pairs(Cache) do
-            if pl ~= LP and data.Hum and data.Hum.Health > 0 and data.Head then
-                if not (Config.TeamCheck and pl.Team == LP.Team) then
-                    local realDist = (data.Head.Position - Camera.CFrame.Position).Magnitude
-                    if realDist <= Config.AIM_Range then
-                        local screenPos, onScreen = Camera:WorldToViewportPoint(data.Head.Position)
-                        if onScreen then
-                            local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
-                            if dist < shortestDist then
-                                local visible = true
-                                if Config.WallCheck then
-                                    local points = { data.Head.Position, data.Head.Position + Vector3.new(0, 0.5, 0), data.Head.Position - Vector3.new(0, 0.5, 0) }
-                                    visible = false
-                                    for _, pt in ipairs(points) do
-                                        local rayParams = RaycastParams.new(); rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}; rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                                        if not Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams) then visible = true; break end
+            if pl ~= LP and data.Hum and data.Hum.Health > 0 then
+                -- Определяем точку наведения (Голова, Тело, Ноги)
+                local aimPart = data.Head
+                if Config.TargetPart == "Torso" then
+                    aimPart = data.Char:FindFirstChild("UpperTorso") or data.Char:FindFirstChild("Torso") or data.HRP
+                elseif Config.TargetPart == "Legs" then
+                    aimPart = data.Char:FindFirstChild("LeftUpperLeg") or data.Char:FindFirstChild("RightUpperLeg") or data.HRP
+                end
+                
+                if aimPart then
+                    if not (Config.TeamCheck and pl.Team == LP.Team) then
+                        local realDist = (aimPart.Position - Camera.CFrame.Position).Magnitude
+                        if realDist <= Config.AIM_Range then
+                            local screenPos, onScreen = Camera:WorldToViewportPoint(aimPart.Position)
+                            if onScreen then
+                                local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                                if dist < shortestDist then
+                                    local visible = true
+                                    if Config.WallCheck then
+                                        local points = { aimPart.Position, aimPart.Position + Vector3.new(0, 0.5, 0), aimPart.Position - Vector3.new(0, 0.5, 0) }
+                                        visible = false
+                                        for _, pt in ipairs(points) do
+                                            local rayParams = RaycastParams.new(); rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}; rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                                            if not Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams) then visible = true; break end
+                                        end
                                     end
+                                    if visible then shortestDist = dist; closest = aimPart end
                                 end
-                                if visible then shortestDist = dist; closest = data.Head end
                             end
                         end
                     end
@@ -205,10 +197,15 @@ local function StartCheat()
         return closest
     end
 
+    -- ==========================================
+    -- МЕНЮ
+    -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
-    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, 190 + (UserRole == "moder" and 90 or 0)); MainFrame.Position = UDim2.new(0.5, -75, 1, -220 - (UserRole == "moder" and 90 or 0)); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    -- Высота меню зависит от роли
+    local menuHeight = 220 + (UserRole == "moder" and 120 or 0)
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, menuHeight); MainFrame.Position = UDim2.new(0.5, -75, 1, -20 - menuHeight); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1; stroke.Parent = MainFrame
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
 
@@ -226,23 +223,43 @@ local function StartCheat()
         end)
     end
 
-    -- Кнопки (Fullbright теперь доступен всем)
+    -- Базовые кнопки
     CreateToggle("ESP", "ESP_Enabled", 5)
     CreateToggle("Aim", "Aim_Enabled", 35)
-    CreateToggle("Fullbright", "Fullbright_Enabled", 65, SetFullbright) -- Добавили сюда
+    CreateToggle("Fullbright", "Fullbright_Enabled", 65, SetFullbright)
     CreateToggle("TeamCheck", "TeamCheck", 95)
     CreateToggle("WallCheck", "WallCheck", 125)
     CreateToggle("NoDeco", "NoDeco_Enabled", 155)
     
+    -- Модерские кнопки
     if UserRole == "moder" then
         CreateToggle("Skeleton", "SkeletonESP", 185)
         CreateToggle("WeaponESP", "WeaponESP", 215)
-        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 245); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
-        local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = fovBtn
+        
+        -- Кнопка смены части тела
+        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 245); partBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
+        local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = partBtn
+        partBtn.MouseButton1Click:Connect(function()
+            if Config.TargetPart == "Head" then
+                Config.TargetPart = "Torso"
+            elseif Config.TargetPart == "Torso" then
+                Config.TargetPart = "Legs"
+            else
+                Config.TargetPart = "Head"
+            end
+            partBtn.Text = "Target: " .. Config.TargetPart
+        end)
+
+        -- Кнопка FOV
+        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 275); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
+        local bCorner2 = Instance.new("UICorner"); bCorner2.CornerRadius = UDim.new(0, 4); bCorner2.Parent = fovBtn
         fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "FOV: " .. Config.CurrentFOV end)
     end
     BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
+    -- ==========================================
+    -- ЦИКЛ (100% наводка)
+    -- ==========================================
     local acc = 0
     RunService.RenderStepped:Connect(function(dt)
         acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
@@ -251,8 +268,9 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
+                -- 100% НАВОДКА (Без Lerp, просто ставим камеру на цель)
                 local targetCFrame = CFrame.new(cam.CFrame.Position, Target.Position + (Target.Velocity * Config.PREDICTION))
-                cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
+                cam.CFrame = targetCFrame
             else FOV_Stroke.Color = Config.Color end
         end
         if Config.ESP_Enabled then
