@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Far Bullets (Risky) ]]
+--[[ FUST | PREMIUM EDITION | Bow Pack (ESP, NoDrop, Aim) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -56,6 +56,7 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false, FarBullets_Enabled = false,
+        ArrowESP_Enabled = false, ArrowNoDrop_Enabled = false, BowAim_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
         FOV_Size = 50, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
@@ -116,24 +117,56 @@ local function StartCheat()
         end)
     end
 
-    -- ФУНКЦИЯ ДАЛЕКИХ ПУЛЬ (РИСКОВАННАЯ)
-    Workspace.DescendantAdded:Connect(function(obj)
-        if not Config.FarBullets_Enabled then return end
-        if obj:IsA("BasePart") then
-            local name = obj.Name:lower()
-            if name:find("bullet") or name:find("arrow") or name:find("projectile") then
-                task.wait(0.05) -- Ждем инициализации
-                pcall(function()
-                    -- Ускоряем пулю в 5 раз
-                    obj.AssemblyLinearVelocity = obj.AssemblyLinearVelocity * 5
-                    -- Отключаем гравитацию для пули, чтобы она летела прямо
-                    obj.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.5, 0.1, 0, 0)
-                    local bf = Instance.new("BodyForce")
-                    bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
-                    bf.Parent = obj
-                end)
-            end
+    -- БАЗА ДЛЯ ARROW ESP
+    local ArrowESP = {}
+    local function CreateArrowESP(arrow)
+        local e = {}
+        e.text = Drawing.new("Text")
+        e.text.Size = 12; e.text.Center = true; e.text.Outline = true; e.text.Color = Color3.fromRGB(255, 50, 50)
+        ArrowESP[arrow] = e
+    end
+    local function RemoveArrowESP(arrow)
+        if ArrowESP[arrow] then
+            pcall(function() ArrowESP[arrow].text:Remove() end)
+            ArrowESP[arrow] = nil
         end
+    end
+
+    Workspace.DescendantAdded:Connect(function(obj)
+        if not obj:IsA("BasePart") then return end
+        local name = obj.Name:lower()
+        
+        -- FAR BULLETS (Старое)
+        if Config.FarBullets_Enabled and (name:find("bullet") or name:find("projectile")) then
+            task.wait(0.05)
+            pcall(function()
+                obj.AssemblyLinearVelocity = obj.AssemblyLinearVelocity * 5
+                obj.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.5, 0.1, 0, 0)
+                local bf = Instance.new("BodyForce")
+                bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
+                bf.Parent = obj
+            end)
+        end
+
+        -- ARROW NO DROP
+        if Config.ArrowNoDrop_Enabled and (name:find("arrow")) then
+            task.wait(0.05)
+            pcall(function()
+                obj.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.5, 0.1, 0, 0)
+                local bf = Instance.new("BodyForce")
+                bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
+                bf.Parent = obj
+            end)
+        end
+
+        -- ARROW ESP
+        if Config.ArrowESP_Enabled and (name:find("arrow")) then
+            CreateArrowESP(obj)
+        end
+    end)
+
+    Workspace.DescendantRemoving:Connect(function(obj)
+        if ArrowESP[obj] then RemoveArrowESP(obj) end
     end)
 
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
@@ -192,7 +225,7 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    -- AIM
+    -- AIM (с поддержкой лука)
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
@@ -296,7 +329,16 @@ local function StartCheat()
                 end
                 AddToggle("Skeleton", "SkeletonESP", 5)
                 AddToggle("WeaponESP", "WeaponESP", 40)
-                AddToggle("Far Bullets (RISKY)", "FarBullets_Enabled", 75)
+                
+            elseif name == "Bow" and (UserRole == "moder" or UserRole == "premium") then
+                local function AddToggle(tName, key, pos)
+                    local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 30); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.Parent = Content
+                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
+                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                end
+                AddToggle("Arrow ESP", "ArrowESP_Enabled", 5)
+                AddToggle("No Bullet Drop (Arrow)", "ArrowNoDrop_Enabled", 40)
+                AddToggle("Auto-Aim Bow (Aim)", "BowAim_Enabled", 75)
                 
             elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
                 local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 5); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
@@ -322,6 +364,7 @@ local function StartCheat()
     CreateTab("Visuals", "👁️")
     if UserRole == "moder" or UserRole == "premium" then 
         CreateTab("Player", "👤") 
+        CreateTab("Bow", "🏹")
         CreateTab("Settings", "⚙️")
     end
 
@@ -335,14 +378,44 @@ local function StartCheat()
     RunService.RenderStepped:Connect(function(dt)
         acc = acc + dt; if acc < (1 / 30) then return end; acc = 0
         local cam = Camera; if not cam then return end; local camPos = cam.CFrame.Position
-        if Config.Aim_Enabled then
+        
+        -- AIM (с учетом лука)
+        if Config.Aim_Enabled or Config.BowAim_Enabled then
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                local targetCFrame = CFrame.new(cam.CFrame.Position, Target.Position + (Target.Velocity * Config.PREDICTION))
+                local targetPos = Target.Position
+                -- Если включен BowAim, добавляем поправку на падение стрелы (стреляем чуть выше)
+                if Config.BowAim_Enabled then
+                    local dist = (targetPos - camPos).Magnitude
+                    targetPos = targetPos + Vector3.new(0, dist * 0.05, 0) -- Поправка вверх
+                end
+                local targetCFrame = CFrame.new(camPos, targetPos + (Target.Velocity * Config.PREDICTION))
                 cam.CFrame = targetCFrame
-            else FOV_Stroke.Color = Config.Color end
+            else 
+                FOV_Stroke.Color = Config.Color 
+            end
         end
+
+        -- ARROW ESP ОТРИСОВКА
+        if Config.ArrowESP_Enabled then
+            for arrow, e in pairs(ArrowESP) do
+                if arrow and arrow.Parent then
+                    local screenPos, onScreen = cam:WorldToViewportPoint(arrow.Position)
+                    if onScreen then
+                        e.text.Visible = true
+                        e.text.Text = "[ARROW]"
+                        e.text.Position = Vector2.new(screenPos.X, screenPos.Y - 15)
+                    else
+                        e.text.Visible = false
+                    end
+                else
+                    RemoveArrowESP(arrow)
+                end
+            end
+        end
+
+        -- ESP ИГРОКОВ
         if Config.ESP_Enabled then
             for pl, e in pairs(ESP) do
                 local data = Cache[pl]
