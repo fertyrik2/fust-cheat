@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | FOV Cycle 30-50-100-150 ]]
+--[[ FUST | PREMIUM EDITION | Watermark + Black-Purple UI ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -24,30 +24,64 @@ local UserRole = "free"
 local MyUsername = LP.Name
 
 local KeyGui = Instance.new("ScreenGui"); KeyGui.Name = "KeySystemGui"; KeyGui.ResetOnSpawn = false; KeyGui.Parent = CoreGui
-local KeyFrame = Instance.new("Frame"); KeyFrame.Size = UDim2.new(0, 250, 0, 120); KeyFrame.Position = UDim2.new(0.5, -125, 0.5, -60); KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); KeyFrame.Parent = KeyGui
+local KeyFrame = Instance.new("Frame"); KeyFrame.Size = UDim2.new(0, 250, 0, 120); KeyFrame.Position = UDim2.new(0.5, -125, 0.5, -60); KeyFrame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); KeyFrame.Parent = KeyGui
 local kCorner = Instance.new("UICorner"); kCorner.CornerRadius = UDim.new(0, 8); kCorner.Parent = KeyFrame
-local kStroke = Instance.new("UIStroke"); kStroke.Color = Color3.fromRGB(150, 80, 255); kStroke.Thickness = 1; kStroke.Parent = KeyFrame
+local kStroke = Instance.new("UIStroke"); kStroke.Color = Color3.fromRGB(150, 80, 255); kStroke.Thickness = 1.5; kStroke.Parent = KeyFrame
 local Title = Instance.new("TextLabel"); Title.Size = UDim2.new(1, 0, 0, 30); Title.BackgroundTransparency = 1; Title.Text = "Введите ключ"; Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 16; Title.Parent = KeyFrame
-local Input = Instance.new("TextBox"); Input.Size = UDim2.new(1, -20, 0, 30); Input.Position = UDim2.new(0, 10, 0, 40); Input.BackgroundColor3 = Color3.fromRGB(30, 30, 40); Input.TextColor3 = Color3.new(1,1,1); Input.PlaceholderText = "Ключ..."; Input.Font = Enum.Font.Gotham; Input.TextSize = 14; Input.Parent = KeyFrame
+local Input = Instance.new("TextBox"); Input.Size = UDim2.new(1, -20, 0, 30); Input.Position = UDim2.new(0, 10, 0, 40); Input.BackgroundColor3 = Color3.fromRGB(30, 20, 40); Input.TextColor3 = Color3.new(1,1,1); Input.PlaceholderText = "Ключ..."; Input.Font = Enum.Font.Gotham; Input.TextSize = 14; Input.Parent = KeyFrame
 local Submit = Instance.new("TextButton"); Submit.Size = UDim2.new(1, -20, 0, 30); Submit.Position = UDim2.new(0, 10, 0, 80); Submit.BackgroundColor3 = Color3.fromRGB(150, 80, 255); Submit.Text = "Активировать"; Submit.TextColor3 = Color3.new(1,1,1); Submit.Font = Enum.Font.GothamBold; Submit.TextSize = 14; Submit.Parent = KeyFrame
 
 -- ==========================================
 -- ОСНОВНОЙ СКРИПТ
 -- ==========================================
 local function StartCheat()
-    pcall(function() for _, v in pairs(CoreGui:GetChildren()) do if v.Name == "FustMenu" or v.Name == "FOVCircle_New" then v:Destroy() end end end)
+    pcall(function() for _, v in pairs(CoreGui:GetChildren()) do if v.Name == "FustMenu" or v.Name == "FOVCircle_New" or v.Name == "FustWatermark" then v:Destroy() end end end)
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 50, -- Начинаем с 50
+        FOV_Size = 50,
         PREDICTION = 0.148,
-        Color = Color3.fromRGB(150, 80, 255),
+        Color = Color3.fromRGB(150, 80, 255), -- Фиолетовый акцент
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
     }
 
+    -- ==========================================
+    -- WATERMARK (Правый нижний угол)
+    -- ==========================================
+    local WM_Gui = Instance.new("ScreenGui"); WM_Gui.Name = "FustWatermark"; WM_Gui.ResetOnSpawn = false; WM_Gui.IgnoreGuiInset = true; WM_Gui.Parent = CoreGui
+    local WM_Frame = Instance.new("Frame")
+    WM_Frame.Size = UDim2.new(0, 200, 0, 65)
+    WM_Frame.Position = UDim2.new(1, -210, 1, -80)
+    WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20)
+    WM_Frame.BackgroundTransparency = 0.2
+    WM_Frame.Parent = WM_Gui
+    
+    local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 6); wmCorner.Parent = WM_Frame
+    local wmStroke = Instance.new("UIStroke"); wmStroke.Color = Config.Color; wmStroke.Thickness = 1; wmStroke.Parent = WM_Frame
+    
+    local TitleLbl = Instance.new("TextLabel"); TitleLbl.Size = UDim2.new(1, 0, 0, 20); TitleLbl.Position = UDim2.new(0, 0, 0, 5); TitleLbl.BackgroundTransparency = 1; TitleLbl.Text = "FUST | PREMIUM"; TitleLbl.TextColor3 = Config.Color; TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.TextSize = 14; TitleLbl.Parent = WM_Frame
+    local FpsLbl = Instance.new("TextLabel"); FpsLbl.Size = UDim2.new(1, 0, 0, 15); FpsLbl.Position = UDim2.new(0, 0, 0, 25); FpsLbl.BackgroundTransparency = 1; FpsLbl.Text = "FPS: 60 | Players: 1"; FpsLbl.TextColor3 = Color3.new(1,1,1); FpsLbl.Font = Enum.Font.Gotham; FpsLbl.TextSize = 12; FpsLbl.Parent = WM_Frame
+    local UserLbl = Instance.new("TextLabel"); UserLbl.Size = UDim2.new(1, 0, 0, 15); UserLbl.Position = UDim2.new(0, 0, 0, 45); UserLbl.BackgroundTransparency = 1; UserLbl.Text = "Role: " .. UserRole; UserLbl.TextColor3 = Color3.fromRGB(200, 200, 200); UserLbl.Font = Enum.Font.Gotham; UserLbl.TextSize = 11; UserLbl.Parent = WM_Frame
+
+    -- Обновление Watermark (FPS и Игроки)
+    local fpsCounter = 0
+    local lastTime = tick()
+    RunService.RenderStepped:Connect(function()
+        fpsCounter = fpsCounter + 1
+        if tick() - lastTime >= 1 then
+            local fps = math.floor(fpsCounter / (tick() - lastTime))
+            local playersCount = #Players:GetPlayers()
+            FpsLbl.Text = string.format("FPS: %d | Players: %d", fps, playersCount)
+            fpsCounter = 0
+            lastTime = tick()
+        end
+    end)
+
+    -- ==========================================
     -- FULLBRIGHT
+    -- ==========================================
     local function SetFullbright(state)
         pcall(function()
             if state then
@@ -158,21 +192,27 @@ local function StartCheat()
         return closest
     end
 
-    -- МЕНЮ
+    -- ==========================================
+    -- МЕНЮ (Черно-фиолетовое)
+    -- ==========================================
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
-    local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
+    local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(150, 80, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
+    
     local menuHeight = 280 + (UserRole == "moder" and 120 or 0)
-    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, menuHeight); MainFrame.Position = UDim2.new(0.5, -75, 1, -20 - menuHeight); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
-    local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1; stroke.Parent = MainFrame
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 170, 0, menuHeight); MainFrame.Position = UDim2.new(0.5, -85, 1, -20 - menuHeight); MainFrame.BackgroundColor3 = Color3.fromRGB(12, 8, 18); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1.5; stroke.Parent = MainFrame
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
+    
+    -- Заголовок меню
+    local Header = Instance.new("TextLabel"); Header.Size = UDim2.new(1, 0, 0, 25); Header.Position = UDim2.new(0, 0, 0, 5); Header.BackgroundTransparency = 1; Header.Text = "FUST PREMIUM"; Header.TextColor3 = Config.Color; Header.Font = Enum.Font.GothamBold; Header.TextSize = 14; Header.Parent = MainFrame
 
     local dragging, dragStart, startPos
     MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = MainFrame.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
     UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
     local function CreateToggle(name, key, pos, callback)
-        local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 25); btn.Position = UDim2.new(0, 5, 0, pos); btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF"); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Gotham; btn.TextSize = 12; btn.Parent = MainFrame
+        local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 25); btn.Position = UDim2.new(0, 5, 0, pos + 25); btn.BackgroundColor3 = Color3.fromRGB(25, 15, 35); btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF"); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Gotham; btn.TextSize = 12; btn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = btn
         btn.MouseButton1Click:Connect(function()
             Config[key] = not Config[key]; btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
@@ -181,33 +221,31 @@ local function StartCheat()
         end)
     end
 
-    CreateToggle("ESP", "ESP_Enabled", 5)
-    CreateToggle("Aim", "Aim_Enabled", 35)
-    CreateToggle("Fullbright", "Fullbright_Enabled", 65, SetFullbright)
-    CreateToggle("TeamCheck", "TeamCheck", 95)
-    CreateToggle("WallCheck", "WallCheck", 125)
-    CreateToggle("NoDeco", "NoDeco_Enabled", 155)
+    CreateToggle("ESP", "ESP_Enabled", 0)
+    CreateToggle("Aim", "Aim_Enabled", 30)
+    CreateToggle("Fullbright", "Fullbright_Enabled", 60, SetFullbright)
+    CreateToggle("TeamCheck", "TeamCheck", 90)
+    CreateToggle("WallCheck", "WallCheck", 120)
+    CreateToggle("NoDeco", "NoDeco_Enabled", 150)
     
-    -- Кнопка FOV (30-50-100-150)
-    local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 25); fovSizeBtn.Position = UDim2.new(0, 5, 0, 185); fovSizeBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 12; fovSizeBtn.Parent = MainFrame
+    -- Кнопка FOV
+    local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 25); fovSizeBtn.Position = UDim2.new(0, 5, 0, 180 + 25); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 12; fovSizeBtn.Parent = MainFrame
     local bCornerFov = Instance.new("UICorner"); bCornerFov.CornerRadius = UDim.new(0, 4); bCornerFov.Parent = fovSizeBtn
     fovSizeBtn.MouseButton1Click:Connect(function()
-        -- Переключаем 30 -> 50 -> 100 -> 150
         if Config.FOV_Size == 30 then Config.FOV_Size = 50
         elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
         elseif Config.FOV_Size == 100 then Config.FOV_Size = 150
         else Config.FOV_Size = 30 end
         fovSizeBtn.Text = "FOV Size: " .. Config.FOV_Size
-        -- Обновляем визуальный круг
         FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
         FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
     end)
 
     if UserRole == "moder" then
-        CreateToggle("Skeleton", "SkeletonESP", 215)
-        CreateToggle("WeaponESP", "WeaponESP", 245)
+        CreateToggle("Skeleton", "SkeletonESP", 210)
+        CreateToggle("WeaponESP", "WeaponESP", 240)
         
-        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 275); partBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
+        local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 25); partBtn.Position = UDim2.new(0, 5, 0, 270 + 25); partBtn.BackgroundColor3 = Config.Color; partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 12; partBtn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = partBtn
         partBtn.MouseButton1Click:Connect(function()
             if Config.TargetPart == "Head" then Config.TargetPart = "Torso"
@@ -216,9 +254,9 @@ local function StartCheat()
             partBtn.Text = "Target: " .. Config.TargetPart
         end)
 
-        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 305); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "Camera FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
-        local bCorner2 = Instance.new("UICorner"); bCorner2.CornerRadius = UDim.new(0, 4); bCorner2.Parent = fovBtn
-        fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "Camera FOV: " .. Config.CurrentFOV end)
+        local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 25); camFovBtn.Position = UDim2.new(0, 5, 0, 300 + 25); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Cam FOV: 70"; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 12; camFovBtn.Parent = MainFrame
+        local bCorner2 = Instance.new("UICorner"); bCorner2.CornerRadius = UDim.new(0, 4); bCorner2.Parent = camFovBtn
+        camFovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; camFovBtn.Text = "Cam FOV: " .. Config.CurrentFOV end)
     end
     BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
