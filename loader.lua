@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Bow Hook (RISKY) ]]
+--[[ FUST | PREMIUM EDITION | Skeleton & Weapon in Visuals ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -7,7 +7,6 @@ local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
-local RS = game:GetService("ReplicatedStorage")
 
 -- ==========================================
 -- ЗАГРУЗКА КЛЮЧЕЙ
@@ -56,10 +55,11 @@ local function StartCheat()
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
-        CustomSky_Enabled = false, FarBullets_Enabled = false,
-        BowHook_Enabled = false,
+        CustomSky_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 50, PREDICTION = 0.148,
+        FOV_Size = 50, 
+        SMOOTHNESS = 0.5,
+        PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
@@ -117,57 +117,6 @@ local function StartCheat()
             end
         end)
     end
-
-    -- ==========================================
-    -- ХУК НА ЛУК (РИСКОВАННЫЙ)
-    -- ==========================================
-    local oldNamecall
-    oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        
-        -- Если включен BowHook и игра пытается отправить выстрел (Raycast или FireServer)
-        if Config.BowHook_Enabled and (method == "Raycast" or method == "FireServer") then
-            if not checkcaller() then
-                local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
-                -- Проверяем, что в руках именно Лук
-                if tool and (tool.Name:lower():find("bow") or tool.Name:lower():find("arrow") or tool.Name:lower():find("лук")) then
-                    local args = {...}
-                    if Target then
-                        -- Подменяем координаты на цель (с поправкой на высоту)
-                        for i, v in ipairs(args) do
-                            if typeof(v) == "Vector3" then
-                                local aimPos = Target.Position
-                                -- Поправка на падение стрелы (стреляем выше)
-                                local dist = (aimPos - Camera.CFrame.Position).Magnitude
-                                aimPos = aimPos + Vector3.new(0, dist * 0.05, 0)
-                                args[i] = aimPos
-                            elseif typeof(v) == "CFrame" then
-                                args[i] = CFrame.new(Target.Position)
-                            end
-                        end
-                        return oldNamecall(self, table.unpack(args))
-                    end
-                end
-            end
-        end
-        return oldNamecall(self, ...)
-    end))
-
-    -- NO BULLET DROP (клиентский)
-    Workspace.DescendantAdded:Connect(function(obj)
-        if not Config.FarBullets_Enabled then return end
-        if obj:IsA("BasePart") then
-            task.wait(0.05)
-            pcall(function()
-                if obj.AssemblyLinearVelocity.Magnitude > 20 then
-                    local bf = Instance.new("BodyForce")
-                    bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
-                    bf.Parent = obj
-                    obj.AssemblyLinearVelocity = obj.AssemblyLinearVelocity * 2
-                end
-            end)
-        end
-    end)
 
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
     local function CheckAndHide(part)
@@ -321,20 +270,32 @@ local function StartCheat()
                 AddToggle("Custom Sky", "CustomSky_Enabled", 75, SetCustomSky)
                 AddToggle("NoDeco", "NoDeco_Enabled", 110)
                 
-            elseif name == "Player" and (UserRole == "moder" or UserRole == "premium") then
-                local function AddToggle(tName, key, pos)
-                    local b = Instance.new("TextButton"); b.Size = UDim2.new(1, -10, 0, 30); b.Position = UDim2.new(0, 5, 0, pos); b.BackgroundColor3 = Color3.fromRGB(25, 15, 35); b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF"); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 13; b.Parent = Content
-                    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = b
-                    b.MouseButton1Click:Connect(function() Config[key] = not Config[key]; b.Text = tName .. ": " .. (Config[key] and "ON" or "OFF") end)
+                -- НОВОЕ: Skeleton и Weapon ESP для модера/премиума
+                if UserRole == "moder" or UserRole == "premium" then
+                    AddToggle("Skeleton", "SkeletonESP", 145)
+                    AddToggle("WeaponESP", "WeaponESP", 180)
                 end
-                AddToggle("Skeleton", "SkeletonESP", 5)
-                AddToggle("WeaponESP", "WeaponESP", 40)
-                AddToggle("Far Bullets", "FarBullets_Enabled", 75)
-                AddToggle("Bow Hook (RISKY)", "BowHook_Enabled", 110)
                 
-            elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
-                local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 5); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
-                local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = fovSizeBtn
+            elseif name == "Aimbot" and (UserRole == "moder" or UserRole == "premium") then
+                -- Smoothness
+                local smoothBtn = Instance.new("TextButton"); smoothBtn.Size = UDim2.new(1, -10, 0, 30); smoothBtn.Position = UDim2.new(0, 5, 0, 5); smoothBtn.BackgroundColor3 = Config.Color; smoothBtn.Text = "Smoothness: " .. Config.SMOOTHNESS; smoothBtn.TextColor3 = Color3.new(1,1,1); smoothBtn.Font = Enum.Font.GothamBold; smoothBtn.TextSize = 13; smoothBtn.Parent = Content
+                local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = smoothBtn
+                smoothBtn.MouseButton1Click:Connect(function()
+                    Config.SMOOTHNESS = (Config.SMOOTHNESS >= 0.9) and 0.1 or Config.SMOOTHNESS + 0.2
+                    smoothBtn.Text = "Smoothness: " .. string.format("%.1f", Config.SMOOTHNESS)
+                end)
+
+                -- Prediction
+                local predBtn = Instance.new("TextButton"); predBtn.Size = UDim2.new(1, -10, 0, 30); predBtn.Position = UDim2.new(0, 5, 0, 40); predBtn.BackgroundColor3 = Config.Color; predBtn.Text = "Prediction: " .. Config.PREDICTION; predBtn.TextColor3 = Color3.new(1,1,1); predBtn.Font = Enum.Font.GothamBold; predBtn.TextSize = 13; predBtn.Parent = Content
+                local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = predBtn
+                predBtn.MouseButton1Click:Connect(function()
+                    Config.PREDICTION = (Config.PREDICTION >= 0.4) and 0.05 or Config.PREDICTION + 0.05
+                    predBtn.Text = "Prediction: " .. string.format("%.2f", Config.PREDICTION)
+                end)
+
+                -- FOV Size
+                local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 75); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
+                local c3 = Instance.new("UICorner"); c3.CornerRadius = UDim.new(0, 4); c3.Parent = fovSizeBtn
                 fovSizeBtn.MouseButton1Click:Connect(function()
                     if Config.FOV_Size == 30 then Config.FOV_Size = 50
                     elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
@@ -344,8 +305,9 @@ local function StartCheat()
                     FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
                     FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
                 end)
-
-                local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 30); camFovBtn.Position = UDim2.new(0, 5, 0, 40); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 13; camFovBtn.Parent = Content
+                
+            elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
+                local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 30); camFovBtn.Position = UDim2.new(0, 5, 0, 5); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 13; camFovBtn.Parent = Content
                 local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = camFovBtn
                 camFovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV end)
             end
@@ -355,8 +317,8 @@ local function StartCheat()
     CreateTab("Combat", "🎯")
     CreateTab("Visuals", "👁️")
     if UserRole == "moder" or UserRole == "premium" then 
-        CreateTab("Player", "👤") 
-        CreateTab("Settings", "⚙️")
+        CreateTab("Aimbot", "⚙️")
+        CreateTab("Settings", "🛠️")
     end
 
     BottomBar.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -374,7 +336,7 @@ local function StartCheat()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
                 local targetCFrame = CFrame.new(camPos, Target.Position + (Target.Velocity * Config.PREDICTION))
-                cam.CFrame = targetCFrame
+                cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
             else FOV_Stroke.Color = Config.Color end
         end
         if Config.ESP_Enabled then
