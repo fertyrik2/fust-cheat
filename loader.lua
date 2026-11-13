@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Key Window Fix ]]
+--[[ FUST | PREMIUM EDITION | Aim Range Fix ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -33,7 +33,6 @@ end
 local UserRole = "free"
 local MyUsername = LP.Name
 
--- Принудительная очистка старых окон при запуске
 pcall(function() 
     for _, v in pairs(CoreGui:GetChildren()) do 
         if v.Name == "KeySystemGui" then v:Destroy() end 
@@ -63,8 +62,8 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false,
-        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
-        FOV_Size = 50, 
+        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500, -- УВЕЛИЧИЛИ ДАЛЬНОСТЬ АИМА
+        FOV_Size = 100, -- Увеличили стандартный FOV
         SMOOTHNESS = 0.5,
         PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
@@ -409,7 +408,6 @@ Submit.MouseButton1Click:Connect(function()
     if keyData then
         if keyData.user == MyUsername then
             UserRole = keyData.role
-            -- ФИКС: Скрываем окно и ждем долю секунды перед запуском
             KeyGui.Enabled = false
             task.wait(0.1) 
             KeyGui:Destroy()
