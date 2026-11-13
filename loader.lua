@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Fix Aim Smoothness & WallCheck ]]
+--[[ FUST | PREMIUM EDITION | Hardcoded Prediction & Instant Lock ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -63,9 +63,8 @@ local function StartCheat()
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
-        FOV_Size = 100,
-        SMOOTHNESS = 0.85, -- Сделали быстрее, но с Lerp
-        PREDICTION = 0.148,
+        FOV_Size = 150, -- Увеличили круг для удобства
+        SMOOTHNESS = 0.95, -- Почти мгновенно (0.95 из 1.0)
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
@@ -180,7 +179,7 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    -- AIM
+    -- AIM (ВСТРОЕННОЕ ПРЕДУГАДЫВАНИЕ)
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
@@ -204,7 +203,6 @@ local function StartCheat()
                                     for _, pt in ipairs(points) do
                                         local rayParams = RaycastParams.new(); rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}; rayParams.FilterType = Enum.RaycastFilterType.Exclude
                                         local ray = Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams)
-                                        -- ФИКС: Если луч попал в землю (Terrain), считаем, что цель видна
                                         if not ray or (ray and ray.Instance:IsA("Terrain")) then visible = true; break end
                                     end
                                 end
@@ -283,33 +281,6 @@ local function StartCheat()
                     AddToggle("WeaponESP", "WeaponESP", 180)
                 end
                 
-            elseif name == "Aimbot" and (UserRole == "moder" or UserRole == "premium") then
-                local smoothBtn = Instance.new("TextButton"); smoothBtn.Size = UDim2.new(1, -10, 0, 30); smoothBtn.Position = UDim2.new(0, 5, 0, 5); smoothBtn.BackgroundColor3 = Config.Color; smoothBtn.Text = "Smoothness: " .. string.format("%.2f", Config.SMOOTHNESS); smoothBtn.TextColor3 = Color3.new(1,1,1); smoothBtn.Font = Enum.Font.GothamBold; smoothBtn.TextSize = 13; smoothBtn.Parent = Content
-                local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = smoothBtn
-                smoothBtn.MouseButton1Click:Connect(function()
-                    Config.SMOOTHNESS = (Config.SMOOTHNESS >= 0.95) and 0.3 or Config.SMOOTHNESS + 0.15
-                    smoothBtn.Text = "Smoothness: " .. string.format("%.2f", Config.SMOOTHNESS)
-                end)
-
-                local predBtn = Instance.new("TextButton"); predBtn.Size = UDim2.new(1, -10, 0, 30); predBtn.Position = UDim2.new(0, 5, 0, 40); predBtn.BackgroundColor3 = Config.Color; predBtn.Text = "Prediction: " .. string.format("%.2f", Config.PREDICTION); predBtn.TextColor3 = Color3.new(1,1,1); predBtn.Font = Enum.Font.GothamBold; predBtn.TextSize = 13; predBtn.Parent = Content
-                local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = predBtn
-                predBtn.MouseButton1Click:Connect(function()
-                    Config.PREDICTION = (Config.PREDICTION >= 0.4) and 0.05 or Config.PREDICTION + 0.05
-                    predBtn.Text = "Prediction: " .. string.format("%.2f", Config.PREDICTION)
-                end)
-
-                local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 75); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
-                local c3 = Instance.new("UICorner"); c3.CornerRadius = UDim.new(0, 4); c3.Parent = fovSizeBtn
-                fovSizeBtn.MouseButton1Click:Connect(function()
-                    if Config.FOV_Size == 30 then Config.FOV_Size = 50
-                    elseif Config.FOV_Size == 50 then Config.FOV_Size = 100
-                    elseif Config.FOV_Size == 100 then Config.FOV_Size = 150
-                    else Config.FOV_Size = 30 end
-                    fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size
-                    FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2)
-                    FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size)
-                end)
-                
             elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
                 local camFovBtn = Instance.new("TextButton"); camFovBtn.Size = UDim2.new(1, -10, 0, 30); camFovBtn.Position = UDim2.new(0, 5, 0, 5); camFovBtn.BackgroundColor3 = Config.Color; camFovBtn.Text = "Camera FOV: " .. Config.CurrentFOV; camFovBtn.TextColor3 = Color3.new(1,1,1); camFovBtn.Font = Enum.Font.GothamBold; camFovBtn.TextSize = 13; camFovBtn.Parent = Content
                 local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = camFovBtn
@@ -321,7 +292,6 @@ local function StartCheat()
     CreateTab("Combat", "🎯")
     CreateTab("Visuals", "👁️")
     if UserRole == "moder" or UserRole == "premium" then 
-        CreateTab("Aimbot", "⚙️")
         CreateTab("Settings", "🛠️")
     end
 
@@ -339,7 +309,9 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                local targetCFrame = CFrame.new(camPos, Target.Position + (Target.Velocity * Config.PREDICTION))
+                -- ВСТРОЕННОЕ ПРЕДУГАДЫВАНИЕ (0.15 сек)
+                local targetPos = Target.Position + (Target.Velocity * 0.15)
+                local targetCFrame = CFrame.new(camPos, targetPos)
                 cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
             else FOV_Stroke.Color = Config.Color end
         end
