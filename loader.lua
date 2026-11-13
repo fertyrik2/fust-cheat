@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Fix Weapon ESP (Backpack) ]]
+--[[ FUST | PREMIUM EDITION | Fullbright (All Roles) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -12,7 +12,6 @@ local UserInputService = game:GetService("UserInputService")
 -- ЗАГРУЗКА КЛЮЧЕЙ С GITHUB
 -- ==========================================
 local KEY_DATABASE = {}
--- ВАЖНО: Проверь, чтобы эта ссылка вела на твой keys.lua!
 local KeysUrl = "https://raw.githubusercontent.com/fertyrik2/fust-cheat/main/keys.lua"
 
 local success, result = pcall(function()
@@ -21,10 +20,7 @@ end)
 
 if success and type(result) == "table" then
     KEY_DATABASE = result
-    print("[FUST] Ключи успешно загружены с GitHub.")
 else
-    print("[-] Ошибка загрузки ключей. Проверь ссылку.")
-    -- Если GitHub не отвечает, пускаем только тебя
     KEY_DATABASE = { ["moder778467526"] = {role = "moder", user = "fust8898"} }
 end
 
@@ -62,15 +58,65 @@ local function StartCheat()
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true,
+        Fullbright_Enabled = false, -- Новая кнопка
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
         FOV_Size = 20, SMOOTHNESS = 0.65, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70
     }
 
-    pcall(function()
-        local cc = Instance.new("ColorCorrectionEffect")
-        cc.Name = "Fust_CC"; cc.Brightness = 0.15; cc.Parent = Lighting
+    -- ==========================================
+    -- FULLBRIGHT ФУНКЦИЯ (Стабильная)
+    -- ==========================================
+    local function SetFullbright(state)
+        pcall(function()
+            if state then
+                -- Включаем день и убираем туман
+                Lighting.ClockTime = 14
+                Lighting.FogEnd = 100000
+                Lighting.FogStart = 0
+                
+                local atm = Lighting:FindFirstChild("Fust_Atm")
+                if not atm then
+                    atm = Instance.new("Atmosphere")
+                    atm.Name = "Fust_Atm"
+                    atm.Parent = Lighting
+                end
+                atm.Density = 0
+                atm.Offset = 0
+                atm.Haze = 0
+                
+                local cc = Lighting:FindFirstChild("Fust_CC")
+                if not cc then
+                    cc = Instance.new("ColorCorrectionEffect")
+                    cc.Name = "Fust_CC"
+                    cc.Parent = Lighting
+                end
+                cc.Brightness = 0.25
+                cc.Contrast = 0.1
+                cc.TintColor = Color3.fromRGB(255, 255, 255)
+            else
+                -- Возвращаем как было (просто убираем наши эффекты)
+                local atm = Lighting:FindFirstChild("Fust_Atm")
+                if atm then atm.Density = 0.3 end -- Стандартная плотность Roblox
+                
+                local cc = Lighting:FindFirstChild("Fust_CC")
+                if cc then cc.Brightness = 0 end
+            end
+        end)
+    end
+
+    -- Защита от сброса дня (раз в 2 секунды)
+    task.spawn(function()
+        while task.wait(2) do
+            if Config.Fullbright_Enabled then
+                pcall(function()
+                    if Lighting.ClockTime < 6 or Lighting.ClockTime > 18 then
+                        Lighting.ClockTime = 14
+                    end
+                end)
+            end
+        end
     end)
 
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
@@ -162,7 +208,7 @@ local function StartCheat()
     local MenuGui = Instance.new("ScreenGui"); MenuGui.Name = "FustMenu"; MenuGui.ResetOnSpawn = false; MenuGui.Parent = CoreGui
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255); BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
-    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, 160 + (UserRole == "moder" and 90 or 0)); MainFrame.Position = UDim2.new(0.5, -75, 1, -190 - (UserRole == "moder" and 90 or 0)); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 150, 0, 190 + (UserRole == "moder" and 90 or 0)); MainFrame.Position = UDim2.new(0.5, -75, 1, -220 - (UserRole == "moder" and 90 or 0)); MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local stroke = Instance.new("UIStroke"); stroke.Color = Config.Color; stroke.Thickness = 1; stroke.Parent = MainFrame
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 6); mCorner.Parent = MainFrame
 
@@ -170,19 +216,28 @@ local function StartCheat()
     MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = input.Position; startPos = MainFrame.Position; input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end) end end)
     UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
 
-    local function CreateToggle(name, key, pos)
+    local function CreateToggle(name, key, pos, callback)
         local btn = Instance.new("TextButton"); btn.Size = UDim2.new(1, -10, 0, 25); btn.Position = UDim2.new(0, 5, 0, pos); btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40); btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF"); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.Gotham; btn.TextSize = 12; btn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = btn
         btn.MouseButton1Click:Connect(function()
             Config[key] = not Config[key]; btn.Text = name .. ": " .. (Config[key] and "ON" or "OFF")
+            if callback then callback(Config[key]) end
             if key == "ESP_Enabled" and not Config.ESP_Enabled then for _, e in pairs(ESP) do for _, obj in pairs(e) do if obj.Remove then obj.Visible = false end end; for _, b in ipairs(e.bones) do b.Visible = false end end end
         end)
     end
 
-    CreateToggle("ESP", "ESP_Enabled", 5); CreateToggle("Aim", "Aim_Enabled", 35); CreateToggle("TeamCheck", "TeamCheck", 65); CreateToggle("WallCheck", "WallCheck", 95); CreateToggle("NoDeco", "NoDeco_Enabled", 125)
+    -- Кнопки (Fullbright теперь доступен всем)
+    CreateToggle("ESP", "ESP_Enabled", 5)
+    CreateToggle("Aim", "Aim_Enabled", 35)
+    CreateToggle("Fullbright", "Fullbright_Enabled", 65, SetFullbright) -- Добавили сюда
+    CreateToggle("TeamCheck", "TeamCheck", 95)
+    CreateToggle("WallCheck", "WallCheck", 125)
+    CreateToggle("NoDeco", "NoDeco_Enabled", 155)
+    
     if UserRole == "moder" then
-        CreateToggle("Skeleton", "SkeletonESP", 155); CreateToggle("WeaponESP", "WeaponESP", 185)
-        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 215); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
+        CreateToggle("Skeleton", "SkeletonESP", 185)
+        CreateToggle("WeaponESP", "WeaponESP", 215)
+        local fovBtn = Instance.new("TextButton"); fovBtn.Size = UDim2.new(1, -10, 0, 25); fovBtn.Position = UDim2.new(0, 5, 0, 245); fovBtn.BackgroundColor3 = Color3.fromRGB(150, 80, 255); fovBtn.Text = "FOV: 70"; fovBtn.TextColor3 = Color3.new(1,1,1); fovBtn.Font = Enum.Font.GothamBold; fovBtn.TextSize = 12; fovBtn.Parent = MainFrame
         local bCorner = Instance.new("UICorner"); bCorner.CornerRadius = UDim.new(0, 4); bCorner.Parent = fovBtn
         fovBtn.MouseButton1Click:Connect(function() Config.CurrentFOV = (Config.CurrentFOV + 20 > 120) and 70 or Config.CurrentFOV + 20; Camera.FieldOfView = Config.CurrentFOV; fovBtn.Text = "FOV: " .. Config.CurrentFOV end)
     end
@@ -218,27 +273,16 @@ local function StartCheat()
                             e.hpBg.Visible = true; e.hpBg.From = Vector2.new(x - 6, y); e.hpBg.To = Vector2.new(x - 6, y + height)
                             e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height); e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent)); e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
                             
-                            -- ИСПРАВЛЕННЫЙ WEAPON ESP
                             if UserRole == "moder" and Config.WeaponESP then
                                 local toolName = nil
                                 local handTool = data.Char:FindFirstChildOfClass("Tool")
-                                if handTool then
-                                    toolName = handTool.Name
+                                if handTool then toolName = handTool.Name
                                 else
                                     local backpack = pl:FindFirstChild("Backpack")
-                                    if backpack then
-                                        local backpackTool = backpack:FindFirstChildOfClass("Tool")
-                                        if backpackTool then toolName = backpackTool.Name .. " (в рюкзаке)" end
-                                    end
+                                    if backpack then local backpackTool = backpack:FindFirstChildOfClass("Tool"); if backpackTool then toolName = backpackTool.Name .. " (в рюкзаке)" end end
                                 end
-                                if toolName then
-                                    e.weapon.Visible = true; e.weapon.Text = "[" .. toolName .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16)
-                                else
-                                    e.weapon.Visible = false
-                                end
-                            else 
-                                e.weapon.Visible = false 
-                            end
+                                if toolName then e.weapon.Visible = true; e.weapon.Text = "[" .. toolName .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16) else e.weapon.Visible = false end
+                            else e.weapon.Visible = false end
                             
                             if UserRole == "moder" and Config.SkeletonESP then
                                 local function to2d(p) if not p then return nil end local sp, on = cam:WorldToViewportPoint(p.Position) if on then return Vector2.new(sp.X, sp.Y) end return nil end
