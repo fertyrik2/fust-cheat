@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Aim Range Fix ]]
+--[[ FUST | PREMIUM EDITION | Force Aim ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -62,9 +62,9 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false,
-        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500, -- УВЕЛИЧИЛИ ДАЛЬНОСТЬ АИМА
-        FOV_Size = 100, -- Увеличили стандартный FOV
-        SMOOTHNESS = 0.5,
+        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
+        FOV_Size = 100,
+        SMOOTHNESS = 1.0, -- МАКСИМАЛЬНАЯ РЕЗКОСТЬ
         PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
@@ -337,8 +337,9 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
+                -- ПРИНУДИТЕЛЬНЫЙ ПОВОРОТ (БЕЗ LERP)
                 local targetCFrame = CFrame.new(camPos, Target.Position + (Target.Velocity * Config.PREDICTION))
-                cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
+                cam.CFrame = targetCFrame
             else FOV_Stroke.Color = Config.Color end
         end
         if Config.ESP_Enabled then
