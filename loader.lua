@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Hardcoded Prediction & Instant Lock ]]
+--[[ FUST | PREMIUM EDITION | FOV Slider + Prediction ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -62,9 +62,9 @@ local function StartCheat()
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false,
-        TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
-        FOV_Size = 150, -- Увеличили круг для удобства
-        SMOOTHNESS = 0.95, -- Почти мгновенно (0.95 из 1.0)
+        TeamCheck = false, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
+        FOV_Size = 100, -- Стандартный FOV
+        SMOOTHNESS = 0.95,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
         TargetPart = "Head"
@@ -179,7 +179,7 @@ local function StartCheat()
     Players.PlayerRemoving:Connect(RemoveAll)
     task.spawn(function() while task.wait(1) do for _, pl in ipairs(Players:GetPlayers()) do if pl ~= LP then local data = Cache[pl]; if not data or not data.Head.Parent or not data.HRP.Parent then UpdateCache(pl) end end end end end)
 
-    -- AIM (ВСТРОЕННОЕ ПРЕДУГАДЫВАНИЕ)
+    -- AIM
     local Target = nil
     local function GetClosestTarget()
         if not Camera then return nil end
@@ -242,7 +242,7 @@ local function StartCheat()
             for _, t in ipairs(Tabs) do t.btn.TextColor3 = Color3.fromRGB(150, 150, 150) end
             btn.TextColor3 = Config.Color
             
-            for _, v in pairs(Content:GetChildren()) do if v:IsA("TextButton") or v:IsA("TextLabel") then v:Destroy() end end
+            for _, v in pairs(Content:GetChildren()) do if v:IsA("TextButton") or v:IsA("TextLabel") or v:IsA("Frame") then v:Destroy() end end
             
             if name == "Combat" then
                 local function AddToggle(tName, key, pos)
@@ -254,8 +254,30 @@ local function StartCheat()
                 AddToggle("TeamCheck", "TeamCheck", 40)
                 AddToggle("WallCheck", "WallCheck", 75)
                 
+                -- ПОЛЗУНОК FOV (Доступен всем)
+                local fovFrame = Instance.new("Frame"); fovFrame.Size = UDim2.new(1, -10, 0, 45); fovFrame.Position = UDim2.new(0, 5, 0, 110); fovFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 35); fovFrame.Parent = Content
+                local fovCorner = Instance.new("UICorner"); fovCorner.CornerRadius = UDim.new(0, 4); fovCorner.Parent = fovFrame
+                local fovText = Instance.new("TextLabel"); fovText.Size = UDim2.new(1, -20, 0, 15); fovText.Position = UDim2.new(0, 10, 0, 5); fovText.BackgroundTransparency = 1; fovText.Text = "FOV Radius: " .. Config.FOV_Size; fovText.TextColor3 = Color3.new(1,1,1); fovText.Font = Enum.Font.Gotham; fovText.TextSize = 12; fovText.TextXAlignment = Enum.TextXAlignment.Left; fovText.Parent = fovFrame
+                local fovBar = Instance.new("Frame"); fovBar.Size = UDim2.new(1, -20, 0, 4); fovBar.Position = UDim2.new(0, 10, 0, 25); fovBar.BackgroundColor3 = Color3.fromRGB(50, 50, 60); fovBar.Parent = fovFrame
+                local fovFill = Instance.new("Frame"); fovFill.Size = UDim2.new((Config.FOV_Size - 20) / 130, 0, 1, 0); fovFill.BackgroundColor3 = Config.Color; fovFill.Parent = fovBar
+                local fovInput = Instance.new("TextButton"); fovInput.Size = UDim2.new(1, 20, 1, 20); fovInput.Position = UDim2.new(0, -10, 0, -10); fovInput.BackgroundTransparency = 1; fovInput.Text = ""; fovInput.Parent = fovBar
+                local fovDragging = false
+                fovInput.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then fovDragging = true end end)
+                UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then fovDragging = false end end)
+                UserInputService.InputChanged:Connect(function(i)
+                    if fovDragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+                        local p = math.clamp((i.Position.X - fovBar.AbsolutePosition.X) / fovBar.AbsoluteSize.X, 0, 1)
+                        local v = math.floor(20 + 130 * p)
+                        Config.FOV_Size = v
+                        fovText.Text = "FOV Radius: " .. v
+                        fovFill.Size = UDim2.new(p, 0, 1, 0)
+                        FOV_Frame.Size = UDim2.new(0, v * 2, 0, v * 2)
+                        FOV_Frame.Position = UDim2.new(0.5, -v, 0.5, -v)
+                    end
+                end)
+
                 if UserRole == "moder" or UserRole == "premium" then
-                    local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 30); partBtn.Position = UDim2.new(0, 5, 0, 110); partBtn.BackgroundColor3 = Config.Color; partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 13; partBtn.Parent = Content
+                    local partBtn = Instance.new("TextButton"); partBtn.Size = UDim2.new(1, -10, 0, 30); partBtn.Position = UDim2.new(0, 5, 0, 165); partBtn.BackgroundColor3 = Config.Color; partBtn.Text = "Target: " .. Config.TargetPart; partBtn.TextColor3 = Color3.new(1,1,1); partBtn.Font = Enum.Font.GothamBold; partBtn.TextSize = 13; partBtn.Parent = Content
                     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = partBtn
                     partBtn.MouseButton1Click:Connect(function()
                         if Config.TargetPart == "Head" then Config.TargetPart = "Torso"
@@ -309,8 +331,7 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                -- ВСТРОЕННОЕ ПРЕДУГАДЫВАНИЕ (0.15 сек)
-                local targetPos = Target.Position + (Target.Velocity * 0.15)
+                local targetPos = Target.Position + (Target.Velocity * 0.15) -- Встроенное предугадывание
                 local targetCFrame = CFrame.new(camPos, targetPos)
                 cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
             else FOV_Stroke.Color = Config.Color end
