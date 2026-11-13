@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Client: rip_rimeri5 ]]
+--[[ FUST | PREMIUM EDITION | Far Bullets (Risky) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,7 +9,7 @@ local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
 
 -- ==========================================
--- ЗАГРУЗКА КЛЮЧЕЙ (С защитой от кэша)
+-- ЗАГРУЗКА КЛЮЧЕЙ
 -- ==========================================
 local KEY_DATABASE = {}
 local KeysUrl = "https://raw.githubusercontent.com/fertyrik2/fust-cheat/main/keys.lua?t=" .. tostring(tick())
@@ -21,7 +21,6 @@ end)
 if success and type(result) == "table" then 
     KEY_DATABASE = result
 else
-    -- Резервные ключи (твой и клиента)
     KEY_DATABASE = { 
         ["moder778467526"] = {role = "moder", user = "fust8898"},
         ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"}
@@ -56,7 +55,7 @@ local function StartCheat()
 
     local Config = {
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
-        CustomSky_Enabled = false,
+        CustomSky_Enabled = false, FarBullets_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 500,
         FOV_Size = 50, PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
@@ -64,7 +63,7 @@ local function StartCheat()
         TargetPart = "Head"
     }
 
-    -- WATERMARK (Маленький, в углу)
+    -- WATERMARK
     local WM_Gui = Instance.new("ScreenGui"); WM_Gui.Name = "FustWatermark"; WM_Gui.ResetOnSpawn = false; WM_Gui.IgnoreGuiInset = true; WM_Gui.Parent = CoreGui
     local WM_Frame = Instance.new("Frame"); WM_Frame.Size = UDim2.new(0, 150, 0, 50); WM_Frame.Position = UDim2.new(1, -160, 1, -60); WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); WM_Frame.BackgroundTransparency = 0.7; WM_Frame.Parent = WM_Gui
     local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 4); wmCorner.Parent = WM_Frame
@@ -116,6 +115,26 @@ local function StartCheat()
             end
         end)
     end
+
+    -- ФУНКЦИЯ ДАЛЕКИХ ПУЛЬ (РИСКОВАННАЯ)
+    Workspace.DescendantAdded:Connect(function(obj)
+        if not Config.FarBullets_Enabled then return end
+        if obj:IsA("BasePart") then
+            local name = obj.Name:lower()
+            if name:find("bullet") or name:find("arrow") or name:find("projectile") then
+                task.wait(0.05) -- Ждем инициализации
+                pcall(function()
+                    -- Ускоряем пулю в 5 раз
+                    obj.AssemblyLinearVelocity = obj.AssemblyLinearVelocity * 5
+                    -- Отключаем гравитацию для пули, чтобы она летела прямо
+                    obj.CustomPhysicalProperties = PhysicalProperties.new(0.1, 0.5, 0.1, 0, 0)
+                    local bf = Instance.new("BodyForce")
+                    bf.Force = Vector3.new(0, obj:GetMass() * workspace.Gravity, 0)
+                    bf.Parent = obj
+                end)
+            end
+        end
+    end)
 
     local function HidePart(part) if part:IsA("BasePart") then part.Transparency = 1; part.CanCollide = false end end
     local function CheckAndHide(part)
@@ -277,6 +296,7 @@ local function StartCheat()
                 end
                 AddToggle("Skeleton", "SkeletonESP", 5)
                 AddToggle("WeaponESP", "WeaponESP", 40)
+                AddToggle("Far Bullets (RISKY)", "FarBullets_Enabled", 75)
                 
             elseif name == "Settings" and (UserRole == "moder" or UserRole == "premium") then
                 local fovSizeBtn = Instance.new("TextButton"); fovSizeBtn.Size = UDim2.new(1, -10, 0, 30); fovSizeBtn.Position = UDim2.new(0, 5, 0, 5); fovSizeBtn.BackgroundColor3 = Config.Color; fovSizeBtn.Text = "Aim FOV: " .. Config.FOV_Size; fovSizeBtn.TextColor3 = Color3.new(1,1,1); fovSizeBtn.Font = Enum.Font.GothamBold; fovSizeBtn.TextSize = 13; fovSizeBtn.Parent = Content
