@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Force Aim ]]
+--[[ FUST | PREMIUM EDITION | Fix Aim Smoothness & WallCheck ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -64,7 +64,7 @@ local function StartCheat()
         CustomSky_Enabled = false,
         TeamCheck = true, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
         FOV_Size = 100,
-        SMOOTHNESS = 1.0, -- МАКСИМАЛЬНАЯ РЕЗКОСТЬ
+        SMOOTHNESS = 0.85, -- Сделали быстрее, но с Lerp
         PREDICTION = 0.148,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
@@ -203,7 +203,9 @@ local function StartCheat()
                                     visible = false
                                     for _, pt in ipairs(points) do
                                         local rayParams = RaycastParams.new(); rayParams.FilterDescendantsInstances = {LP.Character, pl.Character}; rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                                        if not Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams) then visible = true; break end
+                                        local ray = Workspace:Raycast(Camera.CFrame.Position, pt - Camera.CFrame.Position, rayParams)
+                                        -- ФИКС: Если луч попал в землю (Terrain), считаем, что цель видна
+                                        if not ray or (ray and ray.Instance:IsA("Terrain")) then visible = true; break end
                                     end
                                 end
                                 if visible then shortestDist = dist; closest = aimPart end
@@ -282,14 +284,14 @@ local function StartCheat()
                 end
                 
             elseif name == "Aimbot" and (UserRole == "moder" or UserRole == "premium") then
-                local smoothBtn = Instance.new("TextButton"); smoothBtn.Size = UDim2.new(1, -10, 0, 30); smoothBtn.Position = UDim2.new(0, 5, 0, 5); smoothBtn.BackgroundColor3 = Config.Color; smoothBtn.Text = "Smoothness: " .. Config.SMOOTHNESS; smoothBtn.TextColor3 = Color3.new(1,1,1); smoothBtn.Font = Enum.Font.GothamBold; smoothBtn.TextSize = 13; smoothBtn.Parent = Content
+                local smoothBtn = Instance.new("TextButton"); smoothBtn.Size = UDim2.new(1, -10, 0, 30); smoothBtn.Position = UDim2.new(0, 5, 0, 5); smoothBtn.BackgroundColor3 = Config.Color; smoothBtn.Text = "Smoothness: " .. string.format("%.2f", Config.SMOOTHNESS); smoothBtn.TextColor3 = Color3.new(1,1,1); smoothBtn.Font = Enum.Font.GothamBold; smoothBtn.TextSize = 13; smoothBtn.Parent = Content
                 local c1 = Instance.new("UICorner"); c1.CornerRadius = UDim.new(0, 4); c1.Parent = smoothBtn
                 smoothBtn.MouseButton1Click:Connect(function()
-                    Config.SMOOTHNESS = (Config.SMOOTHNESS >= 0.9) and 0.1 or Config.SMOOTHNESS + 0.2
-                    smoothBtn.Text = "Smoothness: " .. string.format("%.1f", Config.SMOOTHNESS)
+                    Config.SMOOTHNESS = (Config.SMOOTHNESS >= 0.95) and 0.3 or Config.SMOOTHNESS + 0.15
+                    smoothBtn.Text = "Smoothness: " .. string.format("%.2f", Config.SMOOTHNESS)
                 end)
 
-                local predBtn = Instance.new("TextButton"); predBtn.Size = UDim2.new(1, -10, 0, 30); predBtn.Position = UDim2.new(0, 5, 0, 40); predBtn.BackgroundColor3 = Config.Color; predBtn.Text = "Prediction: " .. Config.PREDICTION; predBtn.TextColor3 = Color3.new(1,1,1); predBtn.Font = Enum.Font.GothamBold; predBtn.TextSize = 13; predBtn.Parent = Content
+                local predBtn = Instance.new("TextButton"); predBtn.Size = UDim2.new(1, -10, 0, 30); predBtn.Position = UDim2.new(0, 5, 0, 40); predBtn.BackgroundColor3 = Config.Color; predBtn.Text = "Prediction: " .. string.format("%.2f", Config.PREDICTION); predBtn.TextColor3 = Color3.new(1,1,1); predBtn.Font = Enum.Font.GothamBold; predBtn.TextSize = 13; predBtn.Parent = Content
                 local c2 = Instance.new("UICorner"); c2.CornerRadius = UDim.new(0, 4); c2.Parent = predBtn
                 predBtn.MouseButton1Click:Connect(function()
                     Config.PREDICTION = (Config.PREDICTION >= 0.4) and 0.05 or Config.PREDICTION + 0.05
@@ -337,9 +339,8 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                -- ПРИНУДИТЕЛЬНЫЙ ПОВОРОТ (БЕЗ LERP)
                 local targetCFrame = CFrame.new(camPos, Target.Position + (Target.Velocity * Config.PREDICTION))
-                cam.CFrame = targetCFrame
+                cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
             else FOV_Stroke.Color = Config.Color end
         end
         if Config.ESP_Enabled then
