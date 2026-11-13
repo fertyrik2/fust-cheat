@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Moder: fust8898 | Username Lock ]]
+--[[ FUST | PREMIUM EDITION | Key System (GitHub) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -9,18 +9,30 @@ local Lighting = game:GetService("Lighting")
 local UserInputService = game:GetService("UserInputService")
 
 -- ==========================================
--- KEY SYSTEM (Привязка по Нику)
+-- ЗАГРУЗКА КЛЮЧЕЙ С GITHUB
 -- ==========================================
-local VALID_KEYS = {
-    -- Ключ = {role = "роль", user = "Ник"}
-    ["free-516752526337g772"] = {role = "free", user = "Друг1"}, 
-    ["free-5676266376637667h772"] = {role = "free", user = "Друг2"},
-    ["free-5671715627365364k772"] = {role = "free", user = "Друг3"},
-    ["moder778467526"] = {role = "moder", user = "fust8898"} -- ТВОЙ НИК
-}
+local KEY_DATABASE = {}
+-- ВАЖНО: Проверь, чтобы эта ссылка вела на твой keys.lua!
+local KeysUrl = "https://raw.githubusercontent.com/fertyrik2/fust-cheat/main/keys.lua"
 
+local success, result = pcall(function()
+    return loadstring(game:HttpGet(KeysUrl))()
+end)
+
+if success and type(result) == "table" then
+    KEY_DATABASE = result
+    print("[FUST] Ключи успешно загружены с GitHub.")
+else
+    print("[-] Ошибка загрузки ключей. Проверь ссылку.")
+    -- Если GitHub не отвечает, пускаем только тебя
+    KEY_DATABASE = { ["moder778467526"] = {role = "moder", user = "fust8898"} }
+end
+
+-- ==========================================
+-- KEY SYSTEM UI
+-- ==========================================
 local UserRole = "free"
-local MyUsername = LP.Name -- Автоматически берет ник того, кто запустил
+local MyUsername = LP.Name
 
 local KeyGui = Instance.new("ScreenGui")
 KeyGui.Name = "KeySystemGui"
@@ -243,7 +255,7 @@ end
 
 Submit.MouseButton1Click:Connect(function()
     local enteredKey = Input.Text
-    local keyData = VALID_KEYS[enteredKey]
+    local keyData = KEY_DATABASE[enteredKey]
     
     if keyData then
         if keyData.user == MyUsername then
