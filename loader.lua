@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Fixed Menu Code ]]
+--[[ FUST | PREMIUM EDITION | Compact Watermark ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -53,14 +53,15 @@ local function StartCheat()
         TargetPart = "Head"
     }
 
-    -- WATERMARK
+    -- WATERMARK (Маленький, в углу)
     local WM_Gui = Instance.new("ScreenGui"); WM_Gui.Name = "FustWatermark"; WM_Gui.ResetOnSpawn = false; WM_Gui.IgnoreGuiInset = true; WM_Gui.Parent = CoreGui
-    local WM_Frame = Instance.new("Frame"); WM_Frame.Size = UDim2.new(0, 200, 0, 65); WM_Frame.Position = UDim2.new(1, -210, 1, -80); WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); WM_Frame.BackgroundTransparency = 0.6; WM_Frame.Parent = WM_Gui
-    local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 6); wmCorner.Parent = WM_Frame
-    local wmStroke = Instance.new("UIStroke"); wmStroke.Color = Config.Color; wmStroke.Thickness = 1; wmStroke.Transparency = 0.5; wmStroke.Parent = WM_Frame
-    local TitleLbl = Instance.new("TextLabel"); TitleLbl.Size = UDim2.new(1, 0, 0, 20); TitleLbl.Position = UDim2.new(0, 0, 0, 5); TitleLbl.BackgroundTransparency = 1; TitleLbl.Text = "FUST | PREMIUM"; TitleLbl.TextColor3 = Config.Color; TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.TextSize = 14; TitleLbl.Parent = WM_Frame
-    local FpsLbl = Instance.new("TextLabel"); FpsLbl.Size = UDim2.new(1, 0, 0, 15); FpsLbl.Position = UDim2.new(0, 0, 0, 25); FpsLbl.BackgroundTransparency = 1; FpsLbl.Text = "FPS: 60 | Players: 1"; FpsLbl.TextColor3 = Color3.new(1,1,1); FpsLbl.Font = Enum.Font.Gotham; FpsLbl.TextSize = 12; FpsLbl.Parent = WM_Frame
-    local UserLbl = Instance.new("TextLabel"); UserLbl.Size = UDim2.new(1, 0, 0, 15); UserLbl.Position = UDim2.new(0, 0, 0, 45); UserLbl.BackgroundTransparency = 1; UserLbl.Text = "Role: " .. UserRole; UserLbl.TextColor3 = Color3.fromRGB(200, 200, 200); UserLbl.Font = Enum.Font.Gotham; UserLbl.TextSize = 11; UserLbl.Parent = WM_Frame
+    local WM_Frame = Instance.new("Frame"); WM_Frame.Size = UDim2.new(0, 150, 0, 50); WM_Frame.Position = UDim2.new(1, -160, 1, -60); WM_Frame.BackgroundColor3 = Color3.fromRGB(15, 10, 20); WM_Frame.BackgroundTransparency = 0.7; WM_Frame.Parent = WM_Gui
+    local wmCorner = Instance.new("UICorner"); wmCorner.CornerRadius = UDim.new(0, 4); wmCorner.Parent = WM_Frame
+    local wmStroke = Instance.new("UIStroke"); wmStroke.Color = Config.Color; wmStroke.Thickness = 1; wmStroke.Transparency = 0.6; wmStroke.Parent = WM_Frame
+    
+    local TitleLbl = Instance.new("TextLabel"); TitleLbl.Size = UDim2.new(1, 0, 0, 18); TitleLbl.Position = UDim2.new(0, 0, 0, 2); TitleLbl.BackgroundTransparency = 1; TitleLbl.Text = "FUST | PREMIUM"; TitleLbl.TextColor3 = Config.Color; TitleLbl.Font = Enum.Font.GothamBold; TitleLbl.TextSize = 11; TitleLbl.Parent = WM_Frame
+    local FpsLbl = Instance.new("TextLabel"); FpsLbl.Size = UDim2.new(1, 0, 0, 12); FpsLbl.Position = UDim2.new(0, 0, 0, 20); FpsLbl.BackgroundTransparency = 1; FpsLbl.Text = "FPS: 60 | Players: 1"; FpsLbl.TextColor3 = Color3.new(1,1,1); FpsLbl.Font = Enum.Font.Gotham; FpsLbl.TextSize = 10; FpsLbl.Parent = WM_Frame
+    local UserLbl = Instance.new("TextLabel"); UserLbl.Size = UDim2.new(1, 0, 0, 12); UserLbl.Position = UDim2.new(0, 0, 0, 34); UserLbl.BackgroundTransparency = 1; UserLbl.Text = "Role: " .. UserRole; UserLbl.TextColor3 = Color3.fromRGB(200, 200, 200); UserLbl.Font = Enum.Font.Gotham; UserLbl.TextSize = 9; UserLbl.Parent = WM_Frame
 
     local fpsCounter = 0
     local lastTime = tick()
