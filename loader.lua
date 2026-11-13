@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | FOV Slider + Prediction ]]
+--[[ FUST | PREMIUM EDITION | FOV Slider Fix ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -63,7 +63,7 @@ local function StartCheat()
         ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
         CustomSky_Enabled = false,
         TeamCheck = false, WallCheck = true, ESP_MaxDist = 1600, AIM_Range = 1500,
-        FOV_Size = 100, -- Стандартный FOV
+        FOV_Size = 100,
         SMOOTHNESS = 0.95,
         Color = Color3.fromRGB(150, 80, 255),
         SkeletonESP = false, WeaponESP = false, CurrentFOV = 70,
@@ -222,7 +222,7 @@ local function StartCheat()
     local BottomBar = Instance.new("TextButton"); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Config.Color; BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
 
-    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 380, 0, 240); MainFrame.Position = UDim2.new(0.5, -190, 0.5, -120); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    local MainFrame = Instance.new("Frame"); MainFrame.Size = UDim2.new(0, 380, 0, 260); MainFrame.Position = UDim2.new(0.5, -190, 0.5, -130); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 8); mCorner.Parent = MainFrame
     local mStroke = Instance.new("UIStroke"); mStroke.Color = Config.Color; mStroke.Thickness = 1.5; mStroke.Parent = MainFrame
 
@@ -254,7 +254,7 @@ local function StartCheat()
                 AddToggle("TeamCheck", "TeamCheck", 40)
                 AddToggle("WallCheck", "WallCheck", 75)
                 
-                -- ПОЛЗУНОК FOV (Доступен всем)
+                -- ПОЛЗУНОК FOV
                 local fovFrame = Instance.new("Frame"); fovFrame.Size = UDim2.new(1, -10, 0, 45); fovFrame.Position = UDim2.new(0, 5, 0, 110); fovFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 35); fovFrame.Parent = Content
                 local fovCorner = Instance.new("UICorner"); fovCorner.CornerRadius = UDim.new(0, 4); fovCorner.Parent = fovFrame
                 local fovText = Instance.new("TextLabel"); fovText.Size = UDim2.new(1, -20, 0, 15); fovText.Position = UDim2.new(0, 10, 0, 5); fovText.BackgroundTransparency = 1; fovText.Text = "FOV Radius: " .. Config.FOV_Size; fovText.TextColor3 = Color3.new(1,1,1); fovText.Font = Enum.Font.Gotham; fovText.TextSize = 12; fovText.TextXAlignment = Enum.TextXAlignment.Left; fovText.Parent = fovFrame
@@ -331,7 +331,7 @@ local function StartCheat()
             Target = GetClosestTarget()
             if Target then
                 FOV_Stroke.Color = Color3.fromRGB(0, 255, 0)
-                local targetPos = Target.Position + (Target.Velocity * 0.15) -- Встроенное предугадывание
+                local targetPos = Target.Position + (Target.Velocity * 0.15)
                 local targetCFrame = CFrame.new(camPos, targetPos)
                 cam.CFrame = cam.CFrame:Lerp(targetCFrame, Config.SMOOTHNESS)
             else FOV_Stroke.Color = Config.Color end
