@@ -1,4 +1,4 @@
---[[ FUST | PREMIUM EDITION | Key System (GitHub) ]]
+--[[ FUST | PREMIUM EDITION | Fix Weapon ESP (Backpack) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -217,10 +217,29 @@ local function StartCheat()
                             local hpPercent = math.clamp(data.Hum.Health / data.Hum.MaxHealth, 0, 1)
                             e.hpBg.Visible = true; e.hpBg.From = Vector2.new(x - 6, y); e.hpBg.To = Vector2.new(x - 6, y + height)
                             e.hpFill.Visible = true; e.hpFill.From = Vector2.new(x - 6, y + height); e.hpFill.To = Vector2.new(x - 6, y + height - (height * hpPercent)); e.hpFill.Color = Color3.fromRGB(255 * (1 - hpPercent), 255 * hpPercent, 0)
+                            
+                            -- ИСПРАВЛЕННЫЙ WEAPON ESP
                             if UserRole == "moder" and Config.WeaponESP then
-                                local tool = data.Char:FindFirstChildOfClass("Tool")
-                                if tool then e.weapon.Visible = true; e.weapon.Text = "[" .. tool.Name .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16) else e.weapon.Visible = false end
-                            else e.weapon.Visible = false end
+                                local toolName = nil
+                                local handTool = data.Char:FindFirstChildOfClass("Tool")
+                                if handTool then
+                                    toolName = handTool.Name
+                                else
+                                    local backpack = pl:FindFirstChild("Backpack")
+                                    if backpack then
+                                        local backpackTool = backpack:FindFirstChildOfClass("Tool")
+                                        if backpackTool then toolName = backpackTool.Name .. " (в рюкзаке)" end
+                                    end
+                                end
+                                if toolName then
+                                    e.weapon.Visible = true; e.weapon.Text = "[" .. toolName .. "]"; e.weapon.Position = Vector2.new(x + width / 2, y - 16)
+                                else
+                                    e.weapon.Visible = false
+                                end
+                            else 
+                                e.weapon.Visible = false 
+                            end
+                            
                             if UserRole == "moder" and Config.SkeletonESP then
                                 local function to2d(p) if not p then return nil end local sp, on = cam:WorldToViewportPoint(p.Position) if on then return Vector2.new(sp.X, sp.Y) end return nil end
                                 local h2d, r2d = to2d(data.Head), to2d(data.HRP); local t2d = to2d(data.Char:FindFirstChild("UpperTorso"))
