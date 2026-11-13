@@ -344,4 +344,42 @@ local function StartCheat()
                                 for _, b in ipairs(e.bones) do b.Visible = false end
                                 if h2d and r2d then e.bones[1].Visible = true; e.bones[1].From = h2d; e.bones[1].To = r2d end
                                 if t2d and r2d then e.bones[2].Visible = true; e.bones[2].From = t2d; e.bones[2].To = r2d end
-                                if
+                                if t2d and la then e.bones[3].Visible = true; e.bones[3].From = t2d; e.bones[3].To = la end
+                                if t2d and ra then e.bones[4].Visible = true; e.bones[4].From = t2d; e.bones[4].To = ra end
+                                if r2d and ll then e.bones[5].Visible = true; e.bones[5].From = r2d; e.bones[5].To = ll end
+                                if r2d and rl then e.bones[6].Visible = true; e.bones[6].From = r2d; e.bones[6].To = rl end
+                            else for _, b in ipairs(e.bones) do b.Visible = false end end
+                        else
+                            for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
+                            for _, b in ipairs(e.bones) do b.Visible = false end
+                        end
+                    else
+                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
+                        for _, b in ipairs(e.bones) do b.Visible = false end
+                    end
+                else
+                    if e.b1 then
+                        for _, obj in ipairs({e.b1, e.b2, e.b3, e.b4, e.dist, e.hpBg, e.hpFill, e.weapon}) do obj.Visible = false end
+                        for _, b in ipairs(e.bones) do b.Visible = false end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+Submit.MouseButton1Click:Connect(function()
+    local enteredKey = Input.Text
+    local keyData = KEY_DATABASE[enteredKey]
+    if keyData then
+        if keyData.user == MyUsername then
+            UserRole = keyData.role
+            KeyGui:Destroy()
+            StartCheat()
+        else
+            Input.Text = ""; Input.PlaceholderText = "Ключ привязан к " .. keyData.user
+        end
+    else
+        Input.Text = ""; Input.PlaceholderText = "Неверный ключ!"
+    end
+end)
