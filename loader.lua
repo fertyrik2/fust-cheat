@@ -21,14 +21,17 @@ local Config = {
     ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
     TeamCheck = false, WallCheck = true,
     ESP_MaxDist = 1600, AIM_Range = 1500,
-    FOV_Size = 150, -- Увеличил дефолт, чтобы круг было видно
-    SMOOTHNESS = 0.85, -- Было 0.95, стало 0.85 (наводка в 3 раза быстрее)
+    FOV_Size = 150,
+    SMOOTHNESS = 0.85,
     Color = Color3.fromRGB(150, 80, 255),
     TargetPart = "Head"
 }
 
+-- ==========================================
+-- БАЗА КЛЮЧЕЙ
+-- ==========================================
 local KEY_DATABASE = {
-    ["moder2563546"] = {role = "moder", user = "fustmycheat"},
+    ["moder2563546"] = {role = "moder", user = "tfchbcc7"}, -- Привязано к tfchbcc7
     ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"},
     ["free-dlyvseh27636"] = {role = "free", user = "ALL"},
 }
@@ -84,12 +87,11 @@ local function StartCheat()
     local FOV_GUI = Instance.new("ScreenGui"); FOV_GUI.Name = "sg_" .. rnd(); FOV_GUI.ResetOnSpawn = false; FOV_GUI.IgnoreGuiInset = true; FOV_GUI.Parent = GuiParent
     local FOV_Frame = Instance.new("Frame"); FOV_Frame.Name = "f_" .. rnd(); FOV_Frame.Size = UDim2.new(0, Config.FOV_Size * 2, 0, Config.FOV_Size * 2); FOV_Frame.Position = UDim2.new(0.5, -Config.FOV_Size, 0.5, -Config.FOV_Size); FOV_Frame.BackgroundTransparency = 1; FOV_Frame.Parent = FOV_GUI
     
-    -- Круг через ImageLabel (чистая прозрачная текстура)
     local FOV_Img = Instance.new("ImageLabel")
     FOV_Img.Name = "img_" .. rnd()
     FOV_Img.Size = UDim2.new(1, 0, 1, 0)
     FOV_Img.BackgroundTransparency = 1
-    FOV_Img.Image = "rbxassetid://10356538510" -- Текстура пустого круга
+    FOV_Img.Image = "rbxassetid://10356538510"
     FOV_Img.ImageColor3 = Config.Color
     FOV_Img.ImageTransparency = 0.5
     FOV_Img.Parent = FOV_Frame
