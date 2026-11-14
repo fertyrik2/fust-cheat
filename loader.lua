@@ -20,7 +20,7 @@ local Config = {
     CustomSky_Enabled = false, TeamCheck = false, WallCheck = true,
     ESP_MaxDist = 1600, AIM_Range = 1500,
     FOV_Size = 150,
-    SMOOTHNESS = 0.20, -- Ускорено до 20 (раньше было 0.85)
+    SMOOTHNESS = 0.20, -- Быстрая наводка
     Color = Color3.fromRGB(150, 80, 255),
     TargetPart = "Head",
     SkeletonESP = false, WeaponESP = false
@@ -30,7 +30,8 @@ local Config = {
 -- БАЗА КЛЮЧЕЙ
 -- ==========================================
 local KEY_DATABASE = {
-    ["moder2563546"] = {role = "moder", user = "tfshbcc7"},
+    -- Привязка к dhsdvdv
+    ["moder2563546"] = {role = "moder", user = "dhsdvdv"},
     ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"},
     ["free-dlyvseh27636"] = {role = "free", user = "ALL"},
 }
@@ -108,7 +109,6 @@ local function StartCheat()
         if pl == LP or ESP[pl] then return end
         local e = {}
         
-        -- Используем BillboardGui для всего (текст, скелет-заглушка, оружие)
         e.billboard = Instance.new("BillboardGui")
         e.billboard.Name = "bb_" .. rnd()
         e.billboard.Size = UDim2.new(0, 150, 0, 60)
@@ -393,8 +393,7 @@ local function StartCheat()
                             e.weapon.Visible = false
                         end
 
-                        -- Скелетон (тут мы его имитируем линиями в BillboardGui, чтобы не палиться на Drawing, либо просто пропускаем если чисто)
-                        -- Для безопасности на Fust лучше вообще не рисовать скелет, оставим просто текст.
+                        -- Скелетон через Drawing убран для избежания бана
                     else
                         e.billboard.Enabled = false
                         e.weapon.Visible = false
