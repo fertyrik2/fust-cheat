@@ -1,4 +1,4 @@
---[[ FUST PREMIUM | Stealth Edition (Safe FOV + Fast Aim) ]]
+--[[ FUST PREMIUM | Stealth Edition (Full Features) ]]
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -19,19 +19,20 @@ local GuiParent = getHiddenUI()
 
 local Config = {
     ESP_Enabled = true, Aim_Enabled = true, NoDeco_Enabled = true, Fullbright_Enabled = false,
-    TeamCheck = false, WallCheck = true,
+    CustomSky_Enabled = false, TeamCheck = false, WallCheck = true,
     ESP_MaxDist = 1600, AIM_Range = 1500,
     FOV_Size = 150,
     SMOOTHNESS = 0.85,
     Color = Color3.fromRGB(150, 80, 255),
-    TargetPart = "Head"
+    TargetPart = "Head",
+    SkeletonESP = false, WeaponESP = false
 }
 
 -- ==========================================
 -- БАЗА КЛЮЧЕЙ
 -- ==========================================
 local KEY_DATABASE = {
-    -- Привязано к tfshbcc7 (по скрину)
+    -- Привязано к tfshbcc7
     ["moder2563546"] = {role = "moder", user = "tfshbcc7"},
     ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"},
     ["free-dlyvseh27636"] = {role = "free", user = "ALL"},
@@ -61,7 +62,7 @@ local function StartCheat()
     local FpsLbl = Instance.new("TextLabel"); FpsLbl.Name = "t_" .. rnd(); FpsLbl.Size = UDim2.new(1, 0, 0, 12); FpsLbl.Position = UDim2.new(0, 0, 0, 20); FpsLbl.BackgroundTransparency = 1; FpsLbl.Text = "FPS: 60 | Players: 1"; FpsLbl.TextColor3 = Color3.new(1,1,1); FpsLbl.Font = Enum.Font.Gotham; FpsLbl.TextSize = 10; FpsLbl.Parent = WM_Frame
     local UserLbl = Instance.new("TextLabel"); UserLbl.Name = "t_" .. rnd(); UserLbl.Size = UDim2.new(1, 0, 0, 12); UserLbl.Position = UDim2.new(0, 0, 0, 34); UserLbl.BackgroundTransparency = 1; UserLbl.Text = "Role: " .. UserRole; UserLbl.TextColor3 = Color3.fromRGB(200, 200, 200); UserLbl.Font = Enum.Font.Gotham; UserLbl.TextSize = 9; UserLbl.Parent = WM_Frame
 
-    -- Fullbright
+    -- Fullbright & Sky
     local OldLighting = {Ambient = Lighting.Ambient, OutdoorAmbient = Lighting.OutdoorAmbient}
     local function SetFullbright(state)
         pcall(function()
@@ -70,6 +71,18 @@ local function StartCheat()
                 Lighting.Ambient = Color3.fromRGB(255, 255, 255); Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
             else
                 Lighting.Ambient = OldLighting.Ambient; Lighting.OutdoorAmbient = OldLighting.OutdoorAmbient
+            end
+        end)
+    end
+
+    local function SetCustomSky(state)
+        pcall(function()
+            for _, v in ipairs(Lighting:GetChildren()) do if v:IsA("Sky") and v.Name:sub(1,4) == "Sky_" then v:Destroy() end end
+            if state then
+                local sky = Instance.new("Sky"); sky.Name = "Sky_" .. rnd()
+                local tex = "rbxassetid://1146126345"
+                sky.SkyboxBk = tex; sky.SkyboxDn = tex; sky.SkyboxFt = tex; sky.SkyboxLf = tex; sky.SkyboxRt = tex; sky.SkyboxUp = tex
+                sky.Clouds = ""; sky.CelestialBodiesShown = false; sky.StarCount = 3000; sky.Parent = Lighting
             end
         end)
     end
@@ -98,7 +111,7 @@ local function StartCheat()
     FOV_Img.Parent = FOV_Frame
 
     -- ==========================================
-    -- ESP (Native Highlight + BillboardGui)
+    -- ESP (Native Highlight + BillboardGui + Skeleton)
     -- ==========================================
     local ESP = {}
     local function CreateESP(pl)
@@ -129,6 +142,13 @@ local function StartCheat()
         e.text.Font = Enum.Font.GothamBold
         e.text.TextSize = 14
         e.text.Parent = e.billboard
+
+        -- Скелетон и Оружие через Drawing (в pcall)
+        pcall(function()
+            e.weapon = Drawing.new("Text"); e.weapon.Size = 11; e.weapon.Center = true; e.weapon.Outline = true; e.weapon.Color = Color3.fromRGB(255, 200, 0); e.weapon.Visible = false
+            e.bones = { Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line"), Drawing.new("Line") }
+            for _, b in ipairs(e.bones) do b.Thickness = 1; b.Color = Color3.fromRGB(255, 100, 100); b.Visible = false end
+        end)
         
         e.Cache = {Char = nil, Hum = nil, HRP = nil, Head = nil, Torso = nil, LArm = nil, RArm = nil, LLeg = nil, RLeg = nil}
         ESP[pl] = e
@@ -139,6 +159,8 @@ local function StartCheat()
             pcall(function()
                 if ESP[pl].highlight then ESP[pl].highlight:Destroy() end
                 if ESP[pl].billboard then ESP[pl].billboard:Destroy() end
+                if ESP[pl].weapon then ESP[pl].weapon:Remove() end
+                if ESP[pl].bones then for _, b in ipairs(ESP[pl].bones) do b:Remove() end end
             end)
             ESP[pl] = nil
         end
@@ -178,7 +200,7 @@ local function StartCheat()
     local BottomBar = Instance.new("TextButton"); BottomBar.Name = "b_" .. rnd(); BottomBar.Size = UDim2.new(0, 150, 0, 4); BottomBar.Position = UDim2.new(0.5, -75, 1, -20); BottomBar.BackgroundColor3 = Config.Color; BottomBar.Text = ""; BottomBar.Parent = MenuGui
     local barCorner = Instance.new("UICorner"); barCorner.CornerRadius = UDim.new(1, 0); barCorner.Parent = BottomBar
 
-    local MainFrame = Instance.new("Frame"); MainFrame.Name = "f_" .. rnd(); MainFrame.Size = UDim2.new(0, 380, 0, 260); MainFrame.Position = UDim2.new(0.5, -190, 0.5, -130); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
+    local MainFrame = Instance.new("Frame"); MainFrame.Name = "f_" .. rnd(); MainFrame.Size = UDim2.new(0, 380, 0, 280); MainFrame.Position = UDim2.new(0.5, -190, 0.5, -140); MainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 24); MainFrame.Visible = false; MainFrame.Parent = MenuGui
     local mCorner = Instance.new("UICorner"); mCorner.CornerRadius = UDim.new(0, 8); mCorner.Parent = MainFrame
 
     local Sidebar = Instance.new("Frame"); Sidebar.Name = "f_" .. rnd(); Sidebar.Size = UDim2.new(0, 100, 1, 0); Sidebar.BackgroundColor3 = Color3.fromRGB(12, 8, 18); Sidebar.Parent = MainFrame
@@ -246,7 +268,13 @@ local function StartCheat()
                 end
                 AddToggle("ESP", "ESP_Enabled", 5)
                 AddToggle("Fullbright", "Fullbright_Enabled", 40, SetFullbright)
-                AddToggle("NoDeco", "NoDeco_Enabled", 75)
+                AddToggle("Custom Sky", "CustomSky_Enabled", 75, SetCustomSky)
+                AddToggle("NoDeco", "NoDeco_Enabled", 110)
+                
+                if UserRole == "moder" or UserRole == "premium" then
+                    AddToggle("Skeleton", "SkeletonESP", 145)
+                    AddToggle("WeaponESP", "WeaponESP", 180)
+                end
             end
         end))
     end
@@ -277,8 +305,14 @@ local function StartCheat()
         return c.Head
     end
 
+    local function hpColor(p)
+        local r, g
+        if p < 0.5 then r = 1; g = p * 2 else r = 1 - (p - 0.5) * 2; g = 1 end
+        return Color3.new(r, g, 0)
+    end
+
     -- ==========================================
-    -- ГЛАВНЫЙ ЦИКЛ (Аим)
+    -- ГЛАВНЫЙ ЦИКЛ (Аим + ESP)
     -- ==========================================
     local stickyTarget = nil
     local stickyUntil = 0
@@ -347,26 +381,73 @@ local function StartCheat()
             end
         end
 
-        -- ESP (Обновление текста)
+        -- ESP и дополнительные фичи
         if Config.ESP_Enabled then
             for pl, e in pairs(ESP) do
                 local c = e.Cache
-                if c.Char and c.Char.Parent and c.Hum and c.Hum.Health > 0 and c.Head then
+                if c.Char and c.Char.Parent and c.Hum and c.Hum.Health > 0 and c.Head and c.HRP then
                     local realDist = (c.HRP.Position - camPos).Magnitude
                     if realDist <= Config.ESP_MaxDist then
                         e.billboard.Enabled = true
                         e.text.Text = string.format("%s [%dm]", pl.Name, math.floor(realDist))
                         e.text.TextColor3 = Color3.fromRGB(255, 100, 100)
+
+                        -- Скелетон и Оружие (Drawing)
+                        pcall(function()
+                            if (UserRole == "moder" or UserRole == "premium") and Config.WeaponESP then
+                                local toolName = nil
+                                local handTool = c.Char:FindFirstChildOfClass("Tool")
+                                if handTool then toolName = handTool.Name
+                                else
+                                    local backpack = pl:FindFirstChild("Backpack")
+                                    if backpack then local bpTool = backpack:FindFirstChildOfClass("Tool"); if bpTool then toolName = bpTool.Name .. " (рюкзак)" end end
+                                end
+                                if toolName and e.weapon then
+                                    local headPos, onH = cam:WorldToViewportPoint(c.Head.Position)
+                                    if onH then
+                                        e.weapon.Visible = true
+                                        e.weapon.Text = "[" .. toolName .. "]"
+                                        e.weapon.Position = Vector2.new(headPos.X, headPos.Y - 30)
+                                    end
+                                else
+                                    if e.weapon then e.weapon.Visible = false end
+                                end
+                            else
+                                if e.weapon then e.weapon.Visible = false end
+                            end
+
+                            if (UserRole == "moder" or UserRole == "premium") and Config.SkeletonESP and e.bones then
+                                local function to2d(p) if not p then return nil end local sp, on = cam:WorldToViewportPoint(p.Position) if on then return Vector2.new(sp.X, sp.Y) end return nil end
+                                local h2d, r2d = to2d(c.Head), to2d(c.HRP); local t2d = to2d(c.Torso)
+                                local la, ra = to2d(c.LArm), to2d(c.RArm); local ll, rl = to2d(c.LLeg), to2d(c.RLeg)
+                                for _, b in ipairs(e.bones) do b.Visible = false end
+                                if h2d and r2d then e.bones[1].Visible = true; e.bones[1].From = h2d; e.bones[1].To = r2d end
+                                if t2d and r2d then e.bones[2].Visible = true; e.bones[2].From = t2d; e.bones[2].To = r2d end
+                                if t2d and la then e.bones[3].Visible = true; e.bones[3].From = t2d; e.bones[3].To = la end
+                                if t2d and ra then e.bones[4].Visible = true; e.bones[4].From = t2d; e.bones[4].To = ra end
+                                if r2d and ll then e.bones[5].Visible = true; e.bones[5].From = r2d; e.bones[5].To = ll end
+                                if r2d and rl then e.bones[6].Visible = true; e.bones[6].From = r2d; e.bones[6].To = rl end
+                            elseif e.bones then
+                                for _, b in ipairs(e.bones) do b.Visible = false end
+                            end
+                        end)
+
                     else
                         e.billboard.Enabled = false
+                        if e.weapon then e.weapon.Visible = false end
+                        if e.bones then for _, b in ipairs(e.bones) do b.Visible = false end end
                     end
                 else
                     e.billboard.Enabled = false
+                    if e.weapon then e.weapon.Visible = false end
+                    if e.bones then for _, b in ipairs(e.bones) do b.Visible = false end end
                 end
             end
         else
             for _, e in pairs(ESP) do
                 e.billboard.Enabled = false
+                if e.weapon then e.weapon.Visible = false end
+                if e.bones then for _, b in ipairs(e.bones) do b.Visible = false end end
             end
         end
     end))
