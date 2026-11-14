@@ -31,7 +31,8 @@ local Config = {
 -- БАЗА КЛЮЧЕЙ
 -- ==========================================
 local KEY_DATABASE = {
-    ["moder2563546"] = {role = "moder", user = "tfchbcc7"}, -- Привязано к tfchbcc7
+    -- Привязано к tfshbcc7 (по скрину)
+    ["moder2563546"] = {role = "moder", user = "tfshbcc7"},
     ["premium-66645725rip"] = {role = "premium", user = "rip_rimeri5"},
     ["free-dlyvseh27636"] = {role = "free", user = "ALL"},
 }
